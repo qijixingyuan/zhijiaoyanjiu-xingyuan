@@ -10,7 +10,7 @@ export interface CollegeSummary {
   honors?: string[]; // honor categories
 }
 
-export interface CollegeDetail extends CollegeSummary {
+export interface CollegeDetail extends Omit<CollegeSummary, "honors"> {
   seqNo: number | null;
   location: string;
   level: string;
