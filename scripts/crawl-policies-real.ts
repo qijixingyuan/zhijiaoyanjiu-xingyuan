@@ -58,6 +58,7 @@ interface CrawlSource {
   province: string;
   url: string;
   waitFor?: string;
+  waitUntil?: "networkidle" | "domcontentloaded" | "load";
 }
 
 const SOURCES: CrawlSource[] = [
@@ -88,13 +89,39 @@ const SOURCES: CrawlSource[] = [
     url: "https://jyt.zj.gov.cn/col/col1532983/index.html",
     waitFor: "a[href*='/art/']",
   },
-  // ── 待探索（URL 需要逐站验证）──
-  // 山东: edu.shandong.gov.cn — SSL 证书错误
-  // 四川: edu.sc.gov.cn — 502
-  // 河南: jyt.henan.gov.cn/col/col16291/ — 404
-  // 河北: jyt.hebei.gov.cn — 连接关闭
-  // 福建: jyt.fujian.gov.cn/xxgk/tzgg/ — 404
-  // 正确做法: 先访问首页 → 找到通知公告/政策文件栏目 → 验证链接 → 添加到 SOURCES
+  // ── 扩展省份（用户提供 URL，2026-06-26 验证）──
+  {
+    name: "山东省教育厅", province: "山东省",
+    url: "http://edu.shandong.gov.cn/col/col11990/index.html",
+    waitFor: "a[href*='/art/']",
+    waitUntil: "domcontentloaded",
+  },
+  // 四川: JS 动态加载表格数据，需拦截 XHR API 才能抓取，暂跳过
+  // {
+  //   name: "四川省教育厅", province: "四川省",
+  //   url: "https://edu.sc.gov.cn/scedu/zcwjk/newzfwj.shtml",
+  //   waitFor: "a[href]",
+  // },
+  {
+    name: "河南省教育厅", province: "河南省",
+    url: "https://jyt.henan.gov.cn/xxgk/wjtz/",
+    waitFor: "a[href]",
+  },
+  {
+    name: "河北省教育厅", province: "河北省",
+    url: "http://www.hee.gov.cn/col/1410097726928/index.html",
+    waitFor: "a[href*='/col/']",
+  },
+  {
+    name: "福建省教育厅", province: "福建省",
+    url: "https://jyt.fujian.gov.cn/xxgk/zywj/",
+    waitFor: "a[href*='/xxgk/']",
+  },
+  {
+    name: "湖北省教育厅", province: "湖北省",
+    url: "https://jyt.hubei.gov.cn/zfxxgk/zc_GK2020/gfxwj_GK2020/ztfl/zyjy/",
+    waitFor: "a[href*='/zfxxgk/']",
+  },
 ];
 
 async function crawlSource(browser: any, source: CrawlSource): Promise<{
@@ -106,8 +133,8 @@ async function crawlSource(browser: any, source: CrawlSource): Promise<{
   try {
     console.log(`  访问 ${source.url.substring(0, 70)}...`);
     await page.goto(source.url, {
-      waitUntil: "networkidle",
-      timeout: 30000,
+      waitUntil: source.waitUntil || "networkidle",
+      timeout: source.waitUntil === "domcontentloaded" ? 60000 : 30000,
     });
 
     // Wait for specific selector if configured
@@ -140,9 +167,10 @@ async function crawlSource(browser: any, source: CrawlSource): Promise<{
         // Only content pages (not navigation)
         const isContent =
           href.endsWith(".html") || href.endsWith(".htm") ||
+          href.endsWith(".shtml") ||
           href.includes("/art/") || href.includes("/content/") ||
           href.includes("/tzgg/") || href.includes("/A07_") ||
-          href.includes("/xxgk/");
+          href.includes("/xxgk/") || href.includes("/zfxxgk/");
 
         if (!isContent) return;
 
