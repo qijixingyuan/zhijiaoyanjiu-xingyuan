@@ -80,20 +80,22 @@ export default function MapPanel({ data, stats, filters, onProvinceClick }: MapP
     instance.off("mouseover");
     instance.off("mouseout");
 
-    instance.on("click", async (params: any) => {
+    instance.on("click", (params: any) => {
       if (params.name && !EXCLUDED_PROVINCES.has(params.name)) {
         const province = params.name;
         setDrawerProvince(province);
         setDrawerLoading(true);
-        try {
-          const p = new URLSearchParams({ province, limit: "300" });
-          if (filtersRef.current.nature) p.set("nature", filtersRef.current.nature);
-          if (filtersRef.current.supervisor) p.set("supervisor", filtersRef.current.supervisor);
-          const res = await fetch(`/api/colleges?${p}`);
-          const json = await res.json();
-          setDrawerColleges(json.data || []);
-        } catch { setDrawerColleges([]); }
-        setDrawerLoading(false);
+        (async () => {
+          try {
+            const p = new URLSearchParams({ province, limit: "300" });
+            if (filtersRef.current.nature) p.set("nature", filtersRef.current.nature);
+            if (filtersRef.current.supervisor) p.set("supervisor", filtersRef.current.supervisor);
+            const res = await fetch(`/api/colleges?${p}`);
+            const json = await res.json();
+            setDrawerColleges(json.data || []);
+          } catch { setDrawerColleges([]); }
+          setDrawerLoading(false);
+        })();
         onProvinceClickRef.current(province);
       }
     });

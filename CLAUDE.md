@@ -172,3 +172,62 @@ npm run db:seed          # 重新导入 1540 院校
 npm run db:studio        # Prisma Studio 数据浏览
 npx tsx prisma/seed.ts   # 运行种子脚本
 ```
+
+## 阿里云部署（硬性规则，必读）
+
+### 服务器信息
+
+| 项目 | 值 |
+|------|-----|
+| IP | 47.107.31.231 |
+| SSH 密钥 | `D:\AI Projects\claude cunjifen\01系统基础指南\luoyu.pem` |
+| SSH 用户 | root |
+| 项目目录 | `/www/wwwroot/zhijiao/` |
+| 端口 | **3001** |
+| PM2 名称 | `zhijiao` |
+| 数据库 | SQLite (`prisma/dev.db`) |
+| 部署文档 | `DEPLOY-{date}.md`（项目目录，带日期） |
+
+### 隔离红线（绝对不能违反）
+
+1. **端口隔离**: 本项目用 **3001**，绝不占用 **3000**（luoyu 积分系统）
+2. **进程隔离**: PM2 名称 `zhijiao`，不碰 `luoyu-backend`
+3. **目录隔离**: 只在 `/www/wwwroot/zhijiao/` 操作，不读写 `/www/wwwroot/luoyu/`
+4. **数据库隔离**: SQLite 独立文件，不连接 MySQL
+5. **Nginx 隔离**: 宝塔面板新增反向代理，不修改现有 luoyu 配置
+
+### 部署流程（每次部署按此步骤）
+
+```bash
+# 1. 先 commit & push 所有本地改动
+cd "D:/AI Projects/高职院校地图系统"
+git add -A && git commit -m "..." && git push
+
+# 2. SSH 连接服务器
+ssh -i "D:\AI Projects\claude cunjifen\01系统基础指南\luoyu.pem" root@47.107.31.231
+
+# 3. 拉取 + 构建
+cd /www/wwwroot/zhijiao && git pull && PORT=3001 npm run build
+
+# 4. 重启 PM2
+pm2 restart zhijiao 2>/dev/null || pm2 start npm --name zhijiao -- start -- --port 3001 && pm2 save
+
+# 5. 验证
+curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:3001/
+# 应返回 200
+```
+
+### 部署相关文档
+
+每次部署必须保存带日期的文档：
+- 本地: `D:\AI Projects\高职院校地图系统\DEPLOY-{YYYY-MM-DD}.md`
+- 服务器: `/www/wwwroot/zhijiao/DEPLOY-{YYYY-MM-DD}.md`
+
+### 服务器已有系统（参考，不要碰）
+
+| 端口 | 项目 | PM2 名称 | 数据库 |
+|:--:|------|------|------|
+| 3000 | 罗峪村积分系统 | luoyu-backend | MySQL |
+| 80/443 | Nginx 反向代理 | - | - |
+| 8888 | 宝塔面板 | - | - |
+| 3306 | MySQL | - | - |
