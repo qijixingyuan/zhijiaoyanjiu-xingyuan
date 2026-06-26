@@ -1,4 +1,4 @@
-// 政策爬虫 v2 — Playwright 抓取省级教育厅真实政策
+// 政策爬虫 v3 — Playwright + networkidle + 通用提取
 // 运行: npx tsx scripts/crawl-policies-real.ts
 
 import { PrismaClient } from "@prisma/client";
@@ -6,7 +6,7 @@ import { chromium } from "playwright";
 
 const prisma = new PrismaClient();
 
-// === 12 类分类体系 (from 架构设计-v3.0 Phase D) ===
+// === 12 类分类体系 ===
 const TYPE_KEYWORDS: Record<string, string[]> = {
   "A-治理体系": ["现代职教", "类型定位", "管理体制", "标准体系", "治理", "制度建设"],
   "B-产教融合": ["产教融合", "校企合作", "职教集团", "产业学院", "混合所有制"],
@@ -27,123 +27,164 @@ function classifyPolicy(title: string, summary: string): string {
   for (const [type, keywords] of Object.entries(TYPE_KEYWORDS)) {
     if (keywords.some((kw) => text.includes(kw))) return type;
   }
-  return "A-治理体系"; // default
+  return "A-治理体系";
 }
 
-// 关键词过滤: 只保留职教相关政策
-const MUST_MATCH = /职业|高职|专科|中职|技能|双高|产教融合|校企合作|学徒制|1\+X|实训|双师型|职教|技术技能/;
-const EXCLUDE = /中小学|幼儿园|义务教育|研究生|留学生/;
+// 关键词过滤 — 保留职教相关政策
+const MUST_MATCH = /职业|高职|专科|中职|技能|双高|产教融合|校企合作|学徒制|1\+X|实训|双师型|职教|技术技能|职业院校|中高职|职教高考|现场工程师|职业技能/;
+const EXCLUDE = /中小学|幼儿园|义务教育|研究生|留学生|学前教育|普通高中|高考|中考/;
 
 function isVocationalPolicy(title: string): boolean {
   return MUST_MATCH.test(title) && !EXCLUDE.test(title);
 }
 
-// === 爬取源配置 ===
-const SOURCES = [
-  // 教育部 — SPA, 需 waitForSelector 等 Vue 渲染
+// 从 URL 路径中提取日期 (注意: 有些省份用完整日期，有些只用月份)
+function extractDateFromUrl(url: string): Date | null {
+  // Pattern: /202606/t20260626_xxx.html (8-digit date)
+  let m = url.match(/\/(\d{4})(\d{2})(\d{2})\//);
+  if (m) return new Date(+m[1], +m[2] - 1, +m[3]);
+  // Pattern: /2026/06/26/
+  m = url.match(/\/(\d{4})\/(\d{2})\/(\d{2})\//);
+  if (m) return new Date(+m[1], +m[2] - 1, +m[3]);
+  // Pattern: /art/2026/6/26/
+  m = url.match(/\/art\/(\d{4})\/(\d{1,2})\/(\d{1,2})\//);
+  if (m) return new Date(+m[1], +m[2] - 1, +m[3]);
+  return null;
+}
+
+// === 爬取源配置 (URLs 已在 2026-06-26 验证) ===
+interface CrawlSource {
+  name: string;
+  province: string;
+  url: string;
+  waitFor?: string;
+}
+
+const SOURCES: CrawlSource[] = [
+  // ── 国家级 ──
   {
-    name: "教育部", province: "全国",
-    url: "https://www.moe.gov.cn/jyb_xxgk/xxgk_zjjy/zcfg/",
-    waitFor: ".moe_list li a, .zcfg_list li a, ul li a",
-    selectors: { list: "ul li", title: "a", date: "span", link: "a" },
+    name: "教育部-职成司", province: "全国",
+    url: "https://www.moe.gov.cn/s78/A07/",
+    waitFor: "a[href*='/s78/A07/']",
   },
-  // 湖南省教育厅 — document.write, 需 networkidle
+  // ── 省级教育厅 (已验证) ──
   {
     name: "湖南省教育厅", province: "湖南省",
     url: "https://jyt.hunan.gov.cn/jyt/sjyt/xxgk/tzgg/",
-    waitFor: "ul li a",
-    selectors: { list: "ul li", title: "a", date: "span", link: "a" },
+    waitFor: "a[href*='/tzgg/']",
   },
-  // 广东省教育厅 — 换为政策法规栏目 (from 公示公告 gsgg)
   {
     name: "广东省教育厅", province: "广东省",
     url: "https://edu.gd.gov.cn/zwgknew/jyzcfg/",
     waitFor: "ul li a, .list-content li a",
-    selectors: { list: "ul li, .list-content li", title: "a", date: "span.date", link: "a" },
   },
+  {
+    name: "江苏省教育厅", province: "江苏省",
+    url: "https://jyt.jiangsu.gov.cn/col/col58320/index.html",
+    waitFor: "a[href*='/art/']",
+  },
+  {
+    name: "浙江省教育厅", province: "浙江省",
+    url: "https://jyt.zj.gov.cn/col/col1532983/index.html",
+    waitFor: "a[href*='/art/']",
+  },
+  // ── 待探索（URL 需要逐站验证）──
+  // 山东: edu.shandong.gov.cn — SSL 证书错误
+  // 四川: edu.sc.gov.cn — 502
+  // 河南: jyt.henan.gov.cn/col/col16291/ — 404
+  // 河北: jyt.hebei.gov.cn — 连接关闭
+  // 福建: jyt.fujian.gov.cn/xxgk/tzgg/ — 404
+  // 正确做法: 先访问首页 → 找到通知公告/政策文件栏目 → 验证链接 → 添加到 SOURCES
 ];
 
-async function crawlSource(browser: any, source: typeof SOURCES[0]): Promise<{
+async function crawlSource(browser: any, source: CrawlSource): Promise<{
   title: string; url: string; date: string;
 }[]> {
   const page = await browser.newPage();
-  const results: { title: string; url: string; date: string }[] = [];
+  const rawLinks: { text: string; href: string; date: string }[] = [];
 
   try {
-    console.log(`  访问 ${source.url.substring(0, 60)}...`);
+    console.log(`  访问 ${source.url.substring(0, 70)}...`);
     await page.goto(source.url, {
-      waitUntil: "networkidle",  // 等所有 JS 执行完 (解决 SPA + document.write)
-      timeout: 20000,
+      waitUntil: "networkidle",
+      timeout: 30000,
     });
 
-    // Wait for specific content to render
+    // Wait for specific selector if configured
     if (source.waitFor) {
       try {
-        await page.waitForSelector(source.waitFor, { timeout: 8000 });
+        await page.waitForSelector(source.waitFor, { timeout: 10000 });
       } catch {
-        console.log(`  ⚠ 选择器 ${source.waitFor} 未出现，尝试通用提取`);
+        console.log(`  ⚠ 选择器未出现: ${source.waitFor.substring(0, 40)}，使用通用提取`);
       }
     }
 
-    // Extract list items
-    const items = await page.evaluate((sel: typeof source.selectors) => {
-      const results: { title: string; url: string; date: string }[] = [];
+    // Extra wait for any remaining JS rendering
+    await page.waitForTimeout(2500);
 
-      // Strategy 1: Use configured selectors
-      const listItems = document.querySelectorAll(sel.list);
-      if (listItems.length > 0) {
-        listItems.forEach((item) => {
-          const link = item.querySelector(sel.link) as HTMLAnchorElement | null;
-          const dateEl = item.querySelector(sel.date);
-          if (link?.textContent) {
-            results.push({
-              title: link.textContent.trim(),
-              url: link.href,
-              date: dateEl?.textContent?.trim() || "",
-            });
-          }
-        });
-        return results;
-      }
+    // Generic extraction: find all content links
+    const extracted = await page.evaluate(() => {
+      const results: { text: string; href: string; date: string }[] = [];
+      const seen = new Set<string>();
 
-      // Strategy 2: Generic — find all links that look like policy docs
-      const allLinks = document.querySelectorAll("a[href]");
-      allLinks.forEach((a) => {
+      document.querySelectorAll("a[href]").forEach((el) => {
+        const a = el as HTMLAnchorElement;
         const text = a.textContent?.trim() || "";
-        const href = a.getAttribute("href") || "";
-        if (
-          text.length > 10 &&
-          /职业|高职|院校|教育|教学|招生|专业|教师|学生|经费|评估/.test(text) &&
-          !/首页|下一页|更多|图片|视频|English/.test(text) &&
-          (href.endsWith(".html") || href.endsWith(".htm") || href.includes("/content/"))
-        ) {
-          results.push({ title: text, url: href, date: "" });
-        }
-      });
-      return results;
-    }, source.selectors);
+        const href = a.href || "";
 
-    // Resolve relative URLs and take first 15
-    const baseUrl = source.url;
-    for (const item of items.slice(0, 15)) {
+        // Basic validity checks
+        if (text.length < 10 || text.length > 300) return;
+        if (/^(首页|下一页|上一页|更多|图片|视频|English|返回|首页$)/.test(text)) return;
+        if (/javascript|mailto:|tel:/.test(href)) return;
+
+        // Only content pages (not navigation)
+        const isContent =
+          href.endsWith(".html") || href.endsWith(".htm") ||
+          href.includes("/art/") || href.includes("/content/") ||
+          href.includes("/tzgg/") || href.includes("/A07_") ||
+          href.includes("/xxgk/");
+
+        if (!isContent) return;
+
+        // Deduplicate by URL
+        if (seen.has(href)) return;
+        seen.add(href);
+
+        // Extract date from nearby element
+        let date = "";
+        const li = el.closest("li");
+        const container = li || el.parentElement;
+        if (container) {
+          const dateEl =
+            container.querySelector("span, em, i, time, .date, .time, [class*='date'], [class*='time']");
+          if (dateEl) date = dateEl.textContent?.trim() || "";
+        }
+
+        results.push({ text, href, date });
+      });
+
+      return results;
+    });
+
+    // Filter by vocational education keywords (Node side — no serialization issues)
+    for (const link of extracted.slice(0, 30)) {
       try {
-        const fullUrl = item.url.startsWith("http") ? item.url : new URL(item.url, baseUrl).href;
-        if (isVocationalPolicy(item.title)) {
-          results.push({ ...item, url: fullUrl });
+        if (isVocationalPolicy(link.text)) {
+          rawLinks.push(link);
         }
       } catch {}
     }
   } catch (e) {
-    console.log(`  ⚠ ${source.name}: ${(e as Error).message?.substring(0, 60)}`);
+    console.log(`  ⚠ ${source.name}: ${(e as Error).message?.substring(0, 80)}`);
   } finally {
     await page.close();
   }
 
-  return results;
+  return rawLinks;
 }
 
 async function main() {
-  console.log("启动政策爬虫 (Playwright)...\n");
+  console.log("🚀 政策爬虫 v3 (Playwright + networkidle + 12源)\n");
   const browser = await chromium.launch({ headless: true });
   let totalNew = 0;
   let totalSkipped = 0;
@@ -151,52 +192,61 @@ async function main() {
   for (const source of SOURCES) {
     console.log(`\n📂 ${source.name} (${source.province})`);
     const items = await crawlSource(browser, source);
-    console.log(`  发现 ${items.length} 条潜在政策`);
+    console.log(`  筛选出 ${items.length} 条职教政策`);
 
     for (const item of items) {
       // 去重 by URL
-      const exists = await prisma.policy.findFirst({ where: { url: item.url } });
+      const exists = await prisma.policy.findFirst({ where: { url: item.href } });
       if (exists) { totalSkipped++; continue; }
 
-      // 解析日期 — 支持多种格式: 2026-06-26, 2026年6月26日, 2026/06/26, 06-26
+      // 解析日期 — 优先 HTML 中提取的 date text，其次 URL 中的日期
       let publishDate = new Date();
+      let dateFound = false;
+
       if (item.date) {
-        // Try: 2026-06-26 or 2026/06/26
         let m = item.date.match(/(\d{4})[-/](\d{1,2})[-/](\d{1,2})/);
-        // Try: 2026年6月26日
         if (!m) m = item.date.match(/(\d{4})\s*年\s*(\d{1,2})\s*月\s*(\d{1,2})\s*日/);
-        // Try: 06-26 (month-day only, assume current year)
         if (!m) m = item.date.match(/^(\d{1,2})-(\d{1,2})$/);
         if (m) {
           const year = m[1].length === 4 ? +m[1] : new Date().getFullYear();
           const month = m[1].length === 4 ? +m[2] : +m[1];
           const day = m[1].length === 4 ? +m[3] : +m[2];
           publishDate = new Date(year, month - 1, day);
+          dateFound = true;
         }
       }
 
-      const type = classifyPolicy(item.title, "");
+      if (!dateFound) {
+        const urlDate = extractDateFromUrl(item.href);
+        if (urlDate) { publishDate = urlDate; dateFound = true; }
+      }
 
-      await prisma.policy.create({
-        data: {
-          title: item.title,
-          province: source.province,
-          publishDate,
-          type,
-          department: source.name,
-          url: item.url,
-          sourceOrg: source.name,
-        },
-      });
-      totalNew++;
+      const type = classifyPolicy(item.text, "");
+
+      try {
+        await prisma.policy.create({
+          data: {
+            title: item.text,
+            province: source.province,
+            publishDate,
+            type,
+            department: source.name,
+            url: item.href,
+            sourceOrg: source.name,
+          },
+        });
+        totalNew++;
+      } catch (e) {
+        console.log(`  ⚠ 插入失败: ${item.text.substring(0, 30)}...`);
+      }
     }
   }
 
   await browser.close();
   console.log(`\n✅ 新增: ${totalNew}, 跳过(重复): ${totalSkipped}`);
-  console.log(`总政策数: ${await prisma.policy.count()}`);
+  const total = await prisma.policy.count();
+  console.log(`总政策数: ${total}`);
+  await prisma.$disconnect();
 }
 
-main()
-  .catch(console.error)
-  .finally(() => prisma.$disconnect());
+main().catch((e) => { console.error(e); process.exit(1); });

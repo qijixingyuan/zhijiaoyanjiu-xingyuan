@@ -23,7 +23,7 @@ export default function CollegeDetailPage() {
     setLoading(true);
     fetch(`/api/colleges/${id}`)
       .then((r) => r.json())
-      .then((data) => { setCollege(data); setLoading(false); })
+      .then((data) => { setCollege(data.error ? null : data); setLoading(false); })
       .catch(() => setLoading(false));
   }, [id]);
 
