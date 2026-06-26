@@ -249,6 +249,15 @@ async function main() {
         if (urlDate) { publishDate = urlDate; dateFound = true; }
       }
 
+      // ── Date range filter: 2025-01-01 through today ──
+      const MIN_DATE = new Date(2025, 0, 1);
+      const TODAY = new Date();
+      if (publishDate < MIN_DATE || publishDate > TODAY) {
+        const dateStr = publishDate.toISOString().split("T")[0];
+        console.log(`  ⏭ 跳过(日期范围外 ${dateStr}): ${item.text.substring(0, 40)}...`);
+        continue;
+      }
+
       const type = classifyPolicy(item.text, "");
 
       try {
