@@ -1,0 +1,101 @@
+// Prisma Schema — 中国高职院校政策研究平台
+// 本地: SQLite, 生产: PostgreSQL
+// 迁移到PG: 将 provider 改为 "postgresql", 更新 .env DATABASE_URL, npx prisma db push
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model College {
+  id         String   @id
+  seqNo      Int?
+  name       String
+  supervisor String
+  location   String
+  province   String
+  city       String?
+  nature     String
+  level      String   @default("专科")
+  remarks    String?
+  website    String?
+  wechatName String?
+  wechatQr   String?
+  formerNames String?
+  honors     Honor[]
+  opinions   PublicOpinion[]
+  collegePolicies CollegePolicy[]
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([province])
+  @@index([nature])
+  @@index([supervisor])
+}
+
+model Honor {
+  id        String   @id @default(uuid())
+  collegeId String
+  college   College  @relation(fields: [collegeId], references: [id], onDelete: Cascade)
+  title     String
+  category  String
+  batch     String?
+  year      Int?
+  source    String?
+  createdAt DateTime @default(now())
+
+  @@index([collegeId])
+  @@index([category])
+}
+
+model Policy {
+  id          String   @id @default(uuid())
+  title       String
+  province    String
+  publishDate DateTime
+  type        String
+  department  String?   // 发文部门
+  summary     String?
+  docNumber   String?
+  sourceOrg   String?
+  url         String?   // 原文链接
+  downloadUrl String?   // 下载链接
+  colleges    CollegePolicy[]
+  createdAt   DateTime @default(now())
+
+  @@index([province])
+  @@index([type])
+  @@index([department])
+  @@index([publishDate])
+}
+
+model CollegePolicy {
+  id        String   @id @default(uuid())
+  collegeId String
+  policyId  String
+  college   College  @relation(fields: [collegeId], references: [id], onDelete: Cascade)
+  policy    Policy   @relation(fields: [policyId], references: [id], onDelete: Cascade)
+
+  @@unique([collegeId, policyId])
+}
+
+model PublicOpinion {
+  id             String   @id @default(uuid())
+  collegeId      String
+  college        College  @relation(fields: [collegeId], references: [id], onDelete: Cascade)
+  platform       String
+  overallScore   Float
+  positiveRatio  Float
+  neutralRatio   Float
+  negativeRatio  Float
+  summary        String?
+  sampleComments String?
+  updatedAt      DateTime @updatedAt
+  createdAt      DateTime @default(now())
+
+  @@index([collegeId])
+}

@@ -1,0 +1,5 @@
+{
+  "cloudcode.allow-bash-commands": true,
+  "cloudcode.show-bash-confirmation": false,
+  "cloudcode.auto-approve-commands": true
+}

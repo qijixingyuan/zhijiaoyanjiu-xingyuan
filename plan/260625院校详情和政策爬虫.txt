@@ -1,0 +1,43 @@
+本轮优化方案
+一、院校详情 — 加省份筛选
+当前: 左栏有搜索框 + 性质下拉 + 荣誉下拉，缺省份筛选。
+
+方案: 在性质下拉之前加一个省份下拉（31 省），选中后调用 loadColleges(province, true)。筛选与地图页逻辑一致。
+
+改动: CollegePanel.tsx — 新增 fProvince state + province select + useEffect 联动；从 @/lib/china-geo import PROVINCES。
+
+二、政策页 — 加 12 类 chip 按钮
+当前: 只有旧的 7 类下拉（发展规划/经费保障/...），A-L 的 12 类体系只用于 LLM 智能搜索，手动筛选不支持。
+
+方案: 在政策页筛选条下方增加一行 chip 按钮，显示 12 类标签（A-治理体系 ~ L-职业本科）。点击选中高亮，再次点击取消。选中后调用 API 以 type 参数筛选。
+
+改动: PolicyPanel.tsx — 新增 fType state + chip button 行 + API 调用时传入 type 参数。
+
+三、政策爬虫 — 诊断与修复
+当前问题: 6 个源仅抓回 1 条。根因分析：
+
+教育部 (moe.gov.cn): 页面是 SPA（Vue.js），内容由 JS 动态加载。即使 Playwright 等 domcontentloaded，DOM 中无政策列表。需要 waitForSelector 等待具体元素出现。
+
+湖南省教育厅 (jyt.hunan.gov.cn): 网站可能需特定 cookie/session，或列表页 URL 模式不对。
+
+广东省教育厅 (edu.gd.gov.cn): 仅抓回 1 条——说明页面可访问但选择器匹配率极低。
+
+其他省份: 证书错误 (山东)、无匹配 (江苏、浙江)。
+
+修复方案:
+
+逐站点用 Playwright page.screenshot() 截图，查看实际 DOM 结构
+为每个站点写专门的选择器
+增加 waitForTimeout(3000) 等待 JS 渲染完成
+先聚焦 3 个能用的源（教育部+广东+湖南），放弃不可访问的
+执行: 先跑一次诊断脚本（截图+DOM分析），再针对性修复选择器。
+
+四、执行顺序
+# 1. CollegePanel — 省份筛选（1 个文件）
+编辑 src/components/college/CollegePanel.tsx
+
+# 2. PolicyPanel — 12 类 chip（1 个文件）
+编辑 src/components/policy/PolicyPanel.tsx
+
+# 3. 爬虫 — 诊断脚本（新建）
+新建 scripts/diagnose-crawler.ts → 逐个站点截图分析
