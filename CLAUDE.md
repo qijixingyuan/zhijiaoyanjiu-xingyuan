@@ -162,6 +162,67 @@ const { chromium } = require('playwright');
 3. **URL 失效检测** — 爬取前先 HEAD 请求检查 200，非 200 的标记 `status=broken` 跳过
 4. **已验证可用的源 URL** — 成功爬取过的 URL 写入配置文件，下次优先使用
 
+## React 数据获取硬性规则（新增，2026-06-27 Code Review）
+
+### 规则 1: fetch 三必须
+
+每个 `useEffect` 中的 fetch 调用必须包含以下三项，缺一不可：
+
+```typescript
+// ✅ 正确模式
+useEffect(() => {
+  const ac = new AbortController();
+  fetch(url, { signal: ac.signal })
+    .then((r) => { if (!r.ok) throw new Error(`${r.status}`); return r.json(); })
+    .then((data) => { setData(data); setError(false); })
+    .catch((err) => {
+      if (err.name === "AbortError") return;
+      console.error("ComponentName fetch:", err);
+      setError(true);
+    });
+  return () => ac.abort();
+}, [deps]);
+```
+
+**禁止**:
+- `catch {}` — 空 catch，错误完全不可见
+- `.catch(() => setError(true))` — 丢弃 error 对象，无法排查根因
+- `if (res.ok) setData(...)` — 无 else 分支，HTTP 错误被静默吞噬
+- 无 AbortController — 组件卸载后 setState 导致 React 警告
+
+### 规则 2: API 返回值必须运行时校验
+
+TypeScript 类型只保证编译时安全，API 返回的 JSON 数据（`r.json()` 返回 `any`）必须运行时校验：
+
+```typescript
+// ✅ 查找表必须有 fallback
+const cfg = STATUS_CONFIG[p.status] || STATUS_CONFIG.empty;
+
+// ✅ parseFloat 后检查 NaN
+const pct = Number.isNaN(parseFloat(rawStr)) ? 0 : parseFloat(rawStr);
+
+// ✅ 条件渲染两边都检查（不是单边）
+const dateStr = (from != null && to != null) ? `${from} ~ ${to}` : "—";
+// ❌ 禁止: {p.dateFrom ? `${p.dateFrom} ~ ${p.dateTo}` : "—"}  — dateTo 可能是 null
+```
+
+### 规则 3: Copy 前先提取共享
+
+当新组件与现有组件共享 50%+ 的骨架代码时（badge/dropdown/ref/ESC/mousedown/fetch 模式），**必须**先提取共享 Hook 或基类组件，再实现差异部分。禁止 Copy-Paste 后各自独立演化。
+
+### 规则 4: 面板/弹窗的 UI 状态必须在关闭时重置
+
+```typescript
+const handleOpen = () => {
+  setFilter("全部");
+  setExpanded(true);
+};
+```
+
+### 规则 5: 显示动态数据的组件必须有刷新机制
+
+`useEffect([], ...)`（空依赖数组）只适用于静态数据。显示爬取进度、统计数字等动态数据时，必须实现：轮询（setInterval）、或焦点恢复时重新 fetch、或定时刷新。
+
 ## 常用命令
 
 ```bash
