@@ -20,23 +20,27 @@ interface CrawlStatus {
   crawlerSources: { total: number; working: number; broken: number };
 }
 
-const STATUS_CONFIG: Record<string, { icon: string; label: string; color: string }> = {
+const STATUS_CONFIG: Record<ProvinceStatus["status"], { icon: string; label: string; color: string }> = {
   success: { icon: "✅", label: "正常", color: "text-green-600" },
   partial: { icon: "⚠️", label: "不足", color: "text-yellow-600" },
   empty: { icon: "❌", label: "无数据", color: "text-red-500" },
 };
 
+// Position offset: AppNav header height (h-[52px]) + 4px clearance
+const DROPDOWN_TOP = "top-[56px]";
+
 export default function PolicyCrawlBadge() {
   const [status, setStatus] = useState<CrawlStatus | null>(null);
   const [expanded, setExpanded] = useState(false);
   const [filter, setFilter] = useState<string>("全部");
+  const [fetchError, setFetchError] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetch("/api/policies/crawl-status")
-      .then((r) => r.json())
-      .then(setStatus)
-      .catch(() => {});
+      .then((r) => { if (!r.ok) throw new Error(r.statusText); return r.json(); })
+      .then((data) => { setStatus(data); setFetchError(false); })
+      .catch(() => setFetchError(true));
   }, []);
 
   // Close on outside click (only for dropdown mode)
@@ -59,7 +63,10 @@ export default function PolicyCrawlBadge() {
     return () => document.removeEventListener("keydown", h);
   }, [expanded]);
 
-  if (!status) return null;
+  if (!status) {
+    if (fetchError) return <span className="bg-white/10 text-white/50 text-[11px] px-2 py-0.5 rounded-[10px]">📊 加载失败</span>;
+    return null;
+  }
 
   const pct = status.crawlerSources.total > 0
     ? Math.round((status.crawlerSources.working / status.crawlerSources.total) * 100)
@@ -86,7 +93,7 @@ export default function PolicyCrawlBadge() {
 
       {/* Expanded dropdown — fixed positioning, same as CrawlProgress */}
       {expanded && (
-        <div className="fixed top-[56px] right-4 bg-white border border-[#D8E2F0] rounded-xl shadow-2xl p-0 z-[100] w-[680px] max-h-[75vh] flex flex-col">
+        <div className={`fixed ${DROPDOWN_TOP} right-4 bg-white border border-[#D8E2F0] rounded-xl shadow-2xl p-0 z-[100] w-[680px] max-h-[75vh] flex flex-col`}>
           {/* Header */}
           <div className="flex items-center justify-between px-5 py-3 border-b border-gray-200 flex-shrink-0">
             <h2 className="text-sm font-bold text-[#0C2340]">政策爬取详情</h2>
@@ -156,6 +163,9 @@ export default function PolicyCrawlBadge() {
                 })}
               </tbody>
             </table>
+            {filtered.length === 0 && (
+              <div className="text-center py-8 text-[#5A6A85] text-xs">无匹配省份</div>
+            )}
           </div>
         </div>
       )}

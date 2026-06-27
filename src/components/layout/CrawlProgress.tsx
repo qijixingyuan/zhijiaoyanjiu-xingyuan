@@ -9,6 +9,9 @@ interface CrawlProgress {
   coverage: string;
 }
 
+// Dropdown offset: AppNav h-[52px] + 4px clearance — keep in sync with AppNav header height
+const DROPDOWN_TOP = "top-[56px]";
+
 export default function CrawlProgress() {
   const [progress, setProgress] = useState<CrawlProgress | null>(null);
   const [expanded, setExpanded] = useState(false);
@@ -56,7 +59,7 @@ export default function CrawlProgress() {
 
       {/* Expanded panel — fixed positioning avoids layout interference */}
       {expanded && (
-        <div className="fixed top-[56px] right-4 bg-white border border-[#D8E2F0] rounded-lg shadow-2xl p-4 z-[100] w-72">
+        <div className={`fixed ${DROPDOWN_TOP} right-4 bg-white border border-[#D8E2F0] rounded-lg shadow-2xl p-4 z-[100] w-72`}>
           <div className="text-sm font-bold text-[#0C2340] mb-3">院校官网采集进度</div>
 
           <div className="h-2 bg-[#F2F5FA] rounded-full mb-3 overflow-hidden">
