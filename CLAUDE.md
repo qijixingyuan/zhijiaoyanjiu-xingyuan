@@ -246,6 +246,29 @@ npx tsx prisma/seed.ts   # 运行种子脚本
 
 ## 阿里云部署（硬性规则，必读）
 
+### 三层环境架构
+
+| 环境 | 端口 | PM2 名称 | 访问 | 部署频率 |
+|------|:--:|------|------|:--:|
+| 本地开发 | 3000 | — | `localhost:3000` | 随时 |
+| **测试环境** | 3002 | `zhijiao-test` | `47.107.31.231:3002` | 随时验证 |
+| **生产环境** | 3001 | `zhijiao` | `47.107.31.231:3001` | **每天一次** |
+
+### 部署节奏（日常规则）
+
+```
+白天 (09:00-17:00):
+  本地开发 → commit → 推送到测试环境(3002)验证
+  pm2 restart zhijiao-test
+
+17:00 之后:
+  确认测试环境一切正常 → 部署到生产环境(3001)
+  pm2 restart zhijiao
+  = 今天的唯一一次生产部署
+```
+
+**例外**: 生产环境紧急 bug 修复不受时间限制，修完立即部署。
+
 ### 服务器信息
 
 | 项目 | 值 |
@@ -254,9 +277,11 @@ npx tsx prisma/seed.ts   # 运行种子脚本
 | SSH 密钥 | `D:\AI Projects\claude cunjifen\01系统基础指南\luoyu.pem` |
 | SSH 用户 | root |
 | 项目目录 | `/www/wwwroot/zhijiao/` |
-| 端口 | **3001** |
-| PM2 名称 | `zhijiao` |
-| 数据库 | SQLite (`prisma/dev.db`) |
+| 生产端口 | **3001** |
+| 测试端口 | **3002** |
+| 生产 PM2 | `zhijiao` |
+| 测试 PM2 | `zhijiao-test` |
+| 数据库 | SQLite (`prisma/dev.db`) — 测试和生产共享同一数据库 |
 | 部署文档 | `DEPLOY-{date}.md`（项目目录，带日期） |
 
 ### 隔离红线（绝对不能违反）
@@ -273,25 +298,21 @@ npx tsx prisma/seed.ts   # 运行种子脚本
 2. **紧急热修复** — 在服务器上改完后，必须同步回本地，提交到 git
 3. **必须直接传文件** — 传文件前先 `git status` 确认没有未跟踪文件冲突，conflict 时先移除服务器上的同名文件再 pull
 
-### 部署流程（每次部署按此步骤）
+### 部署命令
 
 ```bash
-# 1. 先 commit & push 所有本地改动
-cd "D:/AI Projects/高职院校地图系统"
-git add -A && git commit -m "..." && git push
+# === 部署到测试环境（随时） ===
+ssh -i "D:\AI Projects\claude cunjifen\01系统基础指南\luoyu.pem" root@47.107.31.231 \
+  "cd /www/wwwroot/zhijiao && git pull && PORT=3002 npm run build && pm2 restart zhijiao-test"
+# 验证: curl http://47.107.31.231:3002/
 
-# 2. SSH 连接服务器
-ssh -i "D:\AI Projects\claude cunjifen\01系统基础指南\luoyu.pem" root@47.107.31.231
+# === 部署到生产环境（每天 17:00 后一次） ===
+ssh -i "D:\AI Projects\claude cunjifen\01系统基础指南\luoyu.pem" root@47.107.31.231 \
+  "cd /www/wwwroot/zhijiao && git pull && PORT=3001 npm run build && pm2 restart zhijiao"
+# 验证: curl http://47.107.31.231:3001/
 
-# 3. 拉取 + 构建
-cd /www/wwwroot/zhijiao && git pull && PORT=3001 npm run build
-
-# 4. 重启 PM2
-pm2 restart zhijiao 2>/dev/null || pm2 start npm --name zhijiao -- start -- --port 3001 && pm2 save
-
-# 5. 验证
-curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:3001/
-# 应返回 200
+# === 上传数据库（本地改了数据时） ===
+# 先传到测试环境验证，确认没问题再用同样步骤更新生产
 ```
 
 ### 部署相关文档
