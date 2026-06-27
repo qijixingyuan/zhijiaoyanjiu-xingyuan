@@ -1,5 +1,15 @@
 # CLAUDE.md — 高职院校政策研究平台
 
+## 政策数据库操作规则（硬性约束）
+
+**每次进行政策资料库方面的操作（爬虫运行、数据修改、分类调整、源更新、API 改动），必须：**
+1. **操作前**: 读取 [POLICIES.md](POLICIES.md) 了解当前状态
+2. **操作后**: 更新 POLICIES.md，记录操作和结果
+
+POLICIES.md 包含: 数据概览、爬虫源状态、技术问题、结构问题、优先级排期、操作记录。
+
+---
+
 ## 技术栈
 
 - Next.js 14 App Router + TypeScript + Tailwind CSS
