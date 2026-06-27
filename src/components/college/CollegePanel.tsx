@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { CollegeDetail, PolicyItem } from "@/types";
 import { PROVINCES } from "@/lib/china-geo";
 import CollegeDetailModal from "./CollegeDetailModal";
+import CrawlProgress from "@/components/layout/CrawlProgress";
 
 interface CollegePanelProps {
   province: string | null;
@@ -93,7 +94,7 @@ export default function CollegePanel({ province }: CollegePanelProps) {
     <div className="flex h-full overflow-hidden">
       {/* Left: Compact Filters Only */}
       <div className="w-[220px] border-r border-[#D8E2F0] bg-white flex flex-col flex-shrink-0">
-        <div className="p-2.5 space-y-2">
+        <div className="p-2.5 space-y-2 flex-1">
           <input
             type="text" placeholder="搜索院校…" value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -114,6 +115,11 @@ export default function CollegePanel({ province }: CollegePanelProps) {
             <option value="">全部荣誉</option>
             {HONOR_OPTS.filter(Boolean).map(o => <option key={o} value={o}>{o}</option>)}
           </select>
+        </div>
+
+        {/* Website crawl progress */}
+        <div className="p-2.5 border-t border-[#D8E2F0]">
+          <CrawlProgress />
         </div>
       </div>
 

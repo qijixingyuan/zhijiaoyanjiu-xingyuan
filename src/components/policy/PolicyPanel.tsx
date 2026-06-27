@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { PolicyItem } from "@/types";
 import PolicyModal from "./PolicyModal";
+import PolicyCrawlProgress from "./PolicyCrawlProgress";
 import { PROVINCES } from "@/lib/china-geo";
 
 const POLICY_TYPES = ["全部", "发展规划", "经费保障", "专业设置", "质量评估", "招生就业", "对口援助"];
@@ -95,6 +96,11 @@ export default function PolicyPanel({ filters }: PolicyPanelProps) {
       <div className="px-5 py-4 bg-white border-b border-[#D8E2F0] flex-shrink-0">
         <h1 className="text-base font-bold text-[#0C2340] mb-1">高职（专科）政策数据库</h1>
         <p className="text-xs text-[#5A6A85] mb-3">自动爬取各省教育厅官网，覆盖 2021 年至今的省级高职政策文件</p>
+
+        {/* Crawl progress bar */}
+        <div className="mb-3">
+          <PolicyCrawlProgress />
+        </div>
 
         {/* Smart search bar */}
         <div className="flex gap-2 mb-3">
