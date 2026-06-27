@@ -37,13 +37,19 @@ export default function PolicyCrawlBadge() {
   const panelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    fetch("/api/policies/crawl-status")
-      .then((r) => { if (!r.ok) throw new Error(r.statusText); return r.json(); })
+    const ac = new AbortController();
+    fetch("/api/policies/crawl-status", { signal: ac.signal })
+      .then((r) => { if (!r.ok) throw new Error(`${r.status} ${r.statusText}`); return r.json(); })
       .then((data) => { setStatus(data); setFetchError(false); })
-      .catch(() => setFetchError(true));
+      .catch((err) => {
+        if (err instanceof DOMException && err.name === "AbortError") return;
+        console.error("PolicyCrawlBadge fetch error:", err);
+        setFetchError(true);
+      });
+    return () => ac.abort();
   }, []);
 
-  // Close on outside click (only for dropdown mode)
+  // Close on outside click
   useEffect(() => {
     if (!expanded) return;
     const handler = (e: MouseEvent) => {
@@ -55,13 +61,23 @@ export default function PolicyCrawlBadge() {
     return () => document.removeEventListener("mousedown", handler);
   }, [expanded]);
 
-  // ESC close
+  // ESC close + reset filter
   useEffect(() => {
     if (!expanded) return;
     const h = (e: KeyboardEvent) => { if (e.key === "Escape") setExpanded(false); };
     document.addEventListener("keydown", h);
     return () => document.removeEventListener("keydown", h);
   }, [expanded]);
+
+  // Reset filter when panel opens/closes
+  const handleToggle = () => {
+    if (expanded) {
+      setExpanded(false);
+    } else {
+      setFilter("全部");
+      setExpanded(true);
+    }
+  };
 
   if (!status) {
     if (fetchError) return <span className="bg-white/10 text-white/50 text-[11px] px-2 py-0.5 rounded-[10px]">📊 加载失败</span>;
@@ -83,15 +99,15 @@ export default function PolicyCrawlBadge() {
 
   return (
     <div className="relative" ref={panelRef}>
-      {/* Badge — same style as CrawlProgress */}
+      {/* Badge */}
       <span
         className="bg-white/10 text-white text-[11px] px-2 py-0.5 rounded-[10px] cursor-pointer hover:bg-white/20 transition-colors inline-block"
-        onClick={() => setExpanded(!expanded)}
+        onClick={handleToggle}
       >
         📊 {status.total}条 · {status.provinceCount}省
       </span>
 
-      {/* Expanded dropdown — fixed positioning, same as CrawlProgress */}
+      {/* Expanded dropdown */}
       {expanded && (
         <div className={`fixed ${DROPDOWN_TOP} right-4 bg-white border border-[#D8E2F0] rounded-xl shadow-2xl p-0 z-[100] w-[680px] max-h-[75vh] flex flex-col`}>
           {/* Header */}
@@ -147,12 +163,14 @@ export default function PolicyCrawlBadge() {
               </thead>
               <tbody>
                 {filtered.map((p) => {
-                  const cfg = STATUS_CONFIG[p.status];
+                  const cfg = STATUS_CONFIG[p.status] || STATUS_CONFIG.empty;
                   return (
                     <tr key={p.province} className="border-b border-[#F0F4F9] hover:bg-[#F2F5FA]">
                       <td className="py-1.5 font-medium text-[#1A2742]">{p.province}</td>
                       <td className="py-1.5 text-center font-bold text-[#1A56A0]">{p.count}</td>
-                      <td className="py-1.5 text-[#5A6A85]">{p.dateFrom ? `${p.dateFrom} ~ ${p.dateTo}` : "—"}</td>
+                      <td className="py-1.5 text-[#5A6A85]">
+                        {p.dateFrom && p.dateTo ? `${p.dateFrom} ~ ${p.dateTo}` : "—"}
+                      </td>
                       <td className="py-1.5 text-[#5A6A85] truncate max-w-[160px]" title={p.sources.join(", ")}>
                         {p.sources.slice(0, 2).join(", ") || "—"}
                         {p.sources.length > 2 && ` +${p.sources.length - 2}`}

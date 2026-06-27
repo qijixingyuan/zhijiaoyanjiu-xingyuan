@@ -15,20 +15,35 @@ const DROPDOWN_TOP = "top-[56px]";
 export default function CrawlProgress() {
   const [progress, setProgress] = useState<CrawlProgress | null>(null);
   const [expanded, setExpanded] = useState(false);
+  const [fetchError, setFetchError] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
 
   // Fetch progress from API (polling only when expanded)
   useEffect(() => {
+    if (!expanded) return;
+
+    const ac = new AbortController();
     const fetchProgress = async () => {
       try {
-        const res = await fetch("/api/crawl-progress");
-        if (res.ok) setProgress(await res.json());
-      } catch {}
+        const res = await fetch("/api/crawl-progress", { signal: ac.signal });
+        if (res.ok) {
+          const data = await res.json();
+          setProgress(data);
+          setFetchError(false);
+        } else {
+          console.error("CrawlProgress fetch failed:", res.status, res.statusText);
+          setFetchError(true);
+        }
+      } catch (err: any) {
+        if (err?.name === "AbortError") return;
+        console.error("CrawlProgress fetch error:", err);
+        setFetchError(true);
+      }
     };
+
     fetchProgress();
-    if (!expanded) return; // only poll when panel is open
     const interval = setInterval(fetchProgress, 30000);
-    return () => clearInterval(interval);
+    return () => { clearInterval(interval); ac.abort(); };
   }, [expanded]);
 
   // Close panel on outside click
@@ -43,9 +58,21 @@ export default function CrawlProgress() {
     return () => document.removeEventListener("mousedown", handler);
   }, [expanded]);
 
-  if (!progress) return null;
+  // ESC close
+  useEffect(() => {
+    if (!expanded) return;
+    const h = (e: KeyboardEvent) => { if (e.key === "Escape") setExpanded(false); };
+    document.addEventListener("keydown", h);
+    return () => document.removeEventListener("keydown", h);
+  }, [expanded]);
 
-  const pct = parseFloat(progress.coverage);
+  if (!progress) {
+    if (fetchError) return <span className="bg-white/10 text-white/50 text-[11px] px-2 py-0.5 rounded-[10px]">🌐 加载失败</span>;
+    return null;
+  }
+
+  const rawPct = parseFloat(progress.coverage);
+  const pct = Number.isNaN(rawPct) ? 0 : rawPct;
 
   return (
     <div className="relative" ref={panelRef}>
@@ -57,7 +84,7 @@ export default function CrawlProgress() {
         🌐 {progress.withWebsite}/{progress.total}
       </span>
 
-      {/* Expanded panel — fixed positioning avoids layout interference */}
+      {/* Expanded panel */}
       {expanded && (
         <div className={`fixed ${DROPDOWN_TOP} right-4 bg-white border border-[#D8E2F0] rounded-lg shadow-2xl p-4 z-[100] w-72`}>
           <div className="text-sm font-bold text-[#0C2340] mb-3">院校官网采集进度</div>
