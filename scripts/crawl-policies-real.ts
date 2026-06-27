@@ -38,10 +38,16 @@ function isVocationalPolicy(title: string): boolean {
   return MUST_MATCH.test(title) && !EXCLUDE.test(title);
 }
 
-// 从 URL 路径中提取日期 (注意: 有些省份用完整日期，有些只用月份)
+// 从 URL 路径中提取日期
 function extractDateFromUrl(url: string): Date | null {
-  // Pattern: /202606/t20260626_xxx.html (8-digit date)
-  let m = url.match(/\/(\d{4})(\d{2})(\d{2})\//);
+  // Pattern: /202606/t20260626_xxx.shtml (湖北: YYYYMM/tYYYYMMDD_)
+  let m = url.match(/\/t(\d{4})(\d{2})(\d{2})_/);
+  if (m) return new Date(+m[1], +m[2] - 1, +m[3]);
+  // Pattern: /202606/t20260626_xxx.shtml (backward compat: 8-digit then /)
+  m = url.match(/\/(\d{4})(\d{2})(\d{2})\//);
+  if (m) return new Date(+m[1], +m[2] - 1, +m[3]);
+  // Pattern: /2026/06-23/xxx.html (河南: YYYY/MM-DD/)
+  m = url.match(/\/(\d{4})\/(\d{2})-(\d{2})\//);
   if (m) return new Date(+m[1], +m[2] - 1, +m[3]);
   // Pattern: /2026/06/26/
   m = url.match(/\/(\d{4})\/(\d{2})\/(\d{2})\//);
