@@ -1,5 +1,7 @@
 "use client";
 
+import CrawlProgress from "./CrawlProgress";
+import PolicyCrawlBadge from "./PolicyCrawlBadge";
 
 const TABS = [
   { key: "map", label: "院校分布地图", icon: "🗺" },
@@ -45,6 +47,8 @@ export default function AppNav({ activeTab, onTabChange, counts }: {
         <span className="bg-white/10 text-white text-[11px] px-2 py-0.5 rounded-[10px]">
           {counts.total} 所高职院校
         </span>
+        <CrawlProgress />
+        <PolicyCrawlBadge />
       </div>
     </header>
   );
