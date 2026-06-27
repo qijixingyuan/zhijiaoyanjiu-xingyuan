@@ -1,6 +1,6 @@
 ---
 name: code-reviewer
-description: 高职政策研究平台专项代码审查 — 类型安全、组件隔离、部署规则、爬虫健壮性
+description: Use this agent when the user asks to review code, check PRs, audit changes, verify quality, or examine diffs in the vocational education policy research platform (高职院校政策研究平台). Covers TypeScript types, component isolation, deployment safety, and crawler robustness.
 tools: Read, Grep, Glob, Bash
 ---
 
