@@ -58,9 +58,9 @@ function classifyPolicy(title: string, summary: string): string {
   return "A-治理体系";
 }
 
-// 关键词过滤 — 保留职教相关政策
-const MUST_MATCH = /职业|高职|专科|中职|技能|双高|产教融合|校企合作|学徒制|1\+X|实训|双师型|职教|技术技能|职业院校|中高职|职教高考|现场工程师|职业技能/;
-const EXCLUDE = /中小学|幼儿园|义务教育|研究生|留学生|学前教育|普通高中|高考|中考/;
+// 关键词过滤 — 保留职教相关政策（2026-06-29 放宽）
+const MUST_MATCH = /职业|高职|专科|中职|技工|技师|技能|双高|产教融合|校企合作|学徒制|1\+X|实训|双师型|职教|技术技能|职业院校|中高职|职教高考|现场工程师|职业技能|工匠|大国工匠/;
+const EXCLUDE = /中小学|幼儿园|义务教育|留学生|学前教育|中考/;
 
 function isVocationalPolicy(title: string): boolean {
   return MUST_MATCH.test(title) && !EXCLUDE.test(title);
@@ -284,7 +284,8 @@ async function crawlSource(browser: any, source: CrawlSource): Promise<{
       const seen = new Set<string>();
       document.querySelectorAll("a[href]").forEach((el) => {
         const a = el as HTMLAnchorElement;
-        const text = a.textContent?.trim() || "";
+        // Use innerText to exclude <script> content (e.g. document.write pages)
+        const text = (a.innerText || a.textContent || "").trim();
         const href = a.href || "";
         if (text.length < 10 || text.length > 300) return;
         if (/^(首页|下一页|上一页|更多|图片|视频|English|返回|首页$)/.test(text)) return;
@@ -367,8 +368,8 @@ async function main() {
         if (urlDate) { publishDate = urlDate; dateFound = true; }
       }
 
-      // ── Date range filter: 2025-01-01 through today ──
-      const MIN_DATE = new Date(2025, 0, 1);
+      // ── Date range filter: 2024-01-01 through today ──
+      const MIN_DATE = new Date(2024, 0, 1);
       const TODAY = new Date();
       if (publishDate < MIN_DATE || publishDate > TODAY) {
         const dateStr = publishDate.toISOString().split("T")[0];
