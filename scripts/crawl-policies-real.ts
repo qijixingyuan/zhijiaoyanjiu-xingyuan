@@ -66,6 +66,13 @@ function isVocationalPolicy(title: string): boolean {
   return MUST_MATCH.test(title) && !EXCLUDE.test(title);
 }
 
+// 检测地方转发/落实中央文件（避免重复入库）
+const FORWARD_PATTERN = /转发|贯彻落实|贯彻|落实.*意见|执行.*通知|实施.*办法/;
+function isForwardOfCentral(title: string, province: string): boolean {
+  if (province === "全国") return false;
+  return FORWARD_PATTERN.test(title);
+}
+
 // 从 URL 路径中提取日期
 function extractDateFromUrl(url: string): Date | null {
   // Pattern: /202606/t20260626_xxx.shtml (湖北: YYYYMM/tYYYYMMDD_)
@@ -179,8 +186,8 @@ const SOURCES: CrawlSource[] = [
   { name: "重庆市教育委员会", province: "重庆市", url: "https://jw.cq.gov.cn/zwgk/zfxxgkml/zcwj/", waitFor: "a[href]", },
   // ── 用户验证 URL（2026-06-29）──
   { name: "辽宁省教育厅", province: "辽宁省", url: "https://jyt.ln.gov.cn/jyt/gk/jywj/index.shtml", waitFor: "a[href]", waitUntil: "domcontentloaded" },
-  { name: "吉林省教育厅", province: "吉林省", url: "https://xxgk.jl.gov.cn/zcbm/fgw_97963/xxgkmlqy/?stit=2218&num=3", waitFor: "a[href]" },
-  { name: "黑龙江省教育厅", province: "黑龙江省", url: "https://jyt.hlj.gov.cn/jyt/c110487/public_zfxxgk.shtml?tab=gkzc", waitFor: "a[href]" },
+  { name: "吉林省教育厅", province: "吉林省", url: "https://xxgk.jl.gov.cn/zcbm/fgw_97963/xxgkmlqy/", waitFor: "a[href]" },
+  { name: "黑龙江省教育厅", province: "黑龙江省", url: "https://jyt.hlj.gov.cn/jyt/c110481/public_list.shtml", waitFor: "a[href]" },
   { name: "江西省教育厅", province: "江西省", url: "https://jyt.jiangxi.gov.cn/jxjyw/zcwj978/index.html?uid=368486&pageNum=1", waitFor: "a[href]" },
 ];
 
@@ -350,6 +357,17 @@ async function main() {
       // 去重 by URL
       const exists = await prisma.policy.findFirst({ where: { url: item.href } });
       if (exists) { totalSkipped++; continue; }
+
+      // 去重：地方转发/落实中央文件（避免重复入库）
+      if (isForwardOfCentral(item.text, source.province)) {
+        const centralExists = await prisma.policy.findFirst({
+          where: { province: "全国", title: { contains: item.text.substring(0, 10) } }
+        });
+        if (centralExists) {
+          console.log(`  ⏭ 跳过(地方转发): ${item.text.substring(0, 40)}...`);
+          continue;
+        }
+      }
 
       // 解析日期 — 优先 HTML 中提取的 date text，其次 URL 中的日期
       let publishDate = new Date();
