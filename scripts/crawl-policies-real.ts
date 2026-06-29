@@ -177,6 +177,11 @@ const SOURCES: CrawlSource[] = [
   { name: "内蒙古自治区教育厅", province: "内蒙古自治区", url: "https://jyt.nmg.gov.cn/zwgk/tzgg_25132/", waitFor: "a[href]", },
   { name: "上海市教育委员会", province: "上海市", url: "https://edu.sh.gov.cn/xxgk2_zdgz/", waitFor: "a[href]", },
   { name: "重庆市教育委员会", province: "重庆市", url: "https://jw.cq.gov.cn/zwgk/zfxxgkml/zcwj/", waitFor: "a[href]", },
+  // ── 用户验证 URL（2026-06-29）──
+  { name: "辽宁省教育厅", province: "辽宁省", url: "https://jyt.ln.gov.cn/jyt/gk/jywj/index.shtml", waitFor: "a[href]", waitUntil: "domcontentloaded" },
+  { name: "吉林省教育厅", province: "吉林省", url: "https://xxgk.jl.gov.cn/zcbm/fgw_97963/xxgkmlqy/?stit=2218&num=3", waitFor: "a[href]" },
+  { name: "黑龙江省教育厅", province: "黑龙江省", url: "https://jyt.hlj.gov.cn/jyt/c110487/public_zfxxgk.shtml?tab=gkzc", waitFor: "a[href]" },
+  { name: "江西省教育厅", province: "江西省", url: "https://jyt.jiangxi.gov.cn/jxjyw/zcwj978/index.html?uid=368486&pageNum=1", waitFor: "a[href]" },
 ];
 
 /** 从第 1 页提取翻页链接 */
