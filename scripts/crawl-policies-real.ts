@@ -139,6 +139,16 @@ const SOURCES: CrawlSource[] = [
     url: "https://jyt.hubei.gov.cn/zfxxgk/zc_GK2020/gfxwj_GK2020/ztfl/zyjy/",
     waitFor: "a[href*='/zfxxgk/']",
   },
+  // ── 新扩展省份（2026-06-29 验证）──
+  { name: "北京市教育委员会", province: "北京市", url: "https://jw.beijing.gov.cn/tzgg/", waitFor: "a[href]", },
+  { name: "天津市教育委员会", province: "天津市", url: "https://jy.tj.gov.cn/ZWGK_52172/TZGG/", waitFor: "a[href]", },
+  { name: "海南省教育厅", province: "海南省", url: "https://edu.hainan.gov.cn/xxgk/tzgg/", waitFor: "a[href]", },
+  { name: "贵州省教育厅", province: "贵州省", url: "https://jyt.guizhou.gov.cn/zwgk/tzgg/", waitFor: "a[href]", },
+  { name: "云南省教育厅", province: "云南省", url: "https://jyt.yn.gov.cn/web/zwgk/tzgg/", waitFor: "a[href]", },
+  { name: "安徽省教育厅", province: "安徽省", url: "https://jyt.ah.gov.cn/xwzx/tzgg/", waitFor: "a[href]", },
+  { name: "内蒙古自治区教育厅", province: "内蒙古自治区", url: "https://jyt.nmg.gov.cn/zwgk/tzgg_25132/", waitFor: "a[href]", },
+  { name: "上海市教育委员会", province: "上海市", url: "https://edu.sh.gov.cn/xxgk2_zdgz/", waitFor: "a[href]", },
+  { name: "重庆市教育委员会", province: "重庆市", url: "https://jw.cq.gov.cn/zwgk/zfxxgkml/zcwj/", waitFor: "a[href]", },
 ];
 
 /** 从第 1 页提取翻页链接 */
