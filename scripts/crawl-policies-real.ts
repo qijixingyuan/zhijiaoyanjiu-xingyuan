@@ -65,6 +65,13 @@ interface CrawlSource {
   url: string;
   waitFor?: string;
   waitUntil?: "networkidle" | "domcontentloaded" | "load";
+  /** 翻页配置 — 不配则只爬首页 */
+  paginate?: {
+    /** index_N: index_2.html…index_N.html; pageNum: ?pageNum=2…N */
+    type: "index_N" | "pageNum";
+    /** 最多翻到第几页 */
+    maxPages: number;
+  };
 }
 
 const SOURCES: CrawlSource[] = [
@@ -79,16 +86,19 @@ const SOURCES: CrawlSource[] = [
     name: "湖南省教育厅", province: "湖南省",
     url: "https://jyt.hunan.gov.cn/jyt/sjyt/xxgk/tzgg/",
     waitFor: "a[href*='/tzgg/']",
+    paginate: { type: "index_N", maxPages: 10 },
   },
   {
     name: "广东省教育厅", province: "广东省",
     url: "https://edu.gd.gov.cn/zwgknew/jyzcfg/",
     waitFor: "ul li a, .list-content li a",
+    paginate: { type: "index_N", maxPages: 10 },
   },
   {
     name: "江苏省教育厅", province: "江苏省",
     url: "https://jyt.jiangsu.gov.cn/col/col58320/index.html",
     waitFor: "a[href*='/art/']",
+    paginate: { type: "pageNum", maxPages: 8 },
   },
   {
     name: "浙江省教育厅", province: "浙江省",
@@ -101,6 +111,7 @@ const SOURCES: CrawlSource[] = [
     url: "http://edu.shandong.gov.cn/col/col11990/index.html",
     waitFor: "a[href*='/art/']",
     waitUntil: "domcontentloaded",
+    paginate: { type: "pageNum", maxPages: 8 },
   },
   // 四川: JS 动态加载表格数据，需拦截 XHR API 才能抓取，暂跳过
   // {
@@ -130,91 +141,150 @@ const SOURCES: CrawlSource[] = [
   },
 ];
 
+/** 从第 1 页提取翻页链接 */
+async function discoverPageUrls(page: any, source: CrawlSource): Promise<string[]> {
+  if (!source.paginate) return [source.url];
+
+  const urls: string[] = [source.url];
+  try {
+    const found = await page.evaluate((maxPages: number) => {
+      const pageUrls: string[] = [];
+      const as = document.querySelectorAll("a[href]");
+      for (const el of as) {
+        const a = el as HTMLAnchorElement;
+        const href = a.href || "";
+        const text = a.textContent?.trim() || "";
+
+        // index_N.html pattern (湖南、广东)
+        const m1 = href.match(/index[_-](\d+)\.(html|htm|shtml)/i);
+        if (m1) {
+          const n = +m1[1];
+          if (n >= 2 && n <= maxPages) {
+            // Store with page number for sorting
+            if (!pageUrls.includes(href)) pageUrls.push(href);
+          }
+        }
+
+        // pageNum=N pattern (江苏、山东)
+        const m2 = href.match(/[?&]pageNum=(\d+)/i);
+        if (m2) {
+          const n = +m2[1];
+          if (n >= 2 && n <= maxPages) {
+            if (!pageUrls.includes(href)) pageUrls.push(href);
+          }
+        }
+
+        // "下一页" link as fallback
+        if (/^(下一页|下页)$/.test(text) && !pageUrls.includes(href)) {
+          pageUrls.push(href);
+        }
+      }
+      return pageUrls;
+    }, source.paginate.maxPages);
+
+    for (const u of found) {
+      if (!urls.includes(u)) urls.push(u);
+    }
+  } catch {}
+  return urls;
+}
+
 async function crawlSource(browser: any, source: CrawlSource): Promise<{
   title: string; url: string; date: string;
 }[]> {
   const page = await browser.newPage();
-  const rawLinks: { text: string; href: string; date: string }[] = [];
+  const allLinks: { title: string; url: string; date: string }[] = [];
+  const seenUrls = new Set<string>();
 
+  // Load page 1
+  console.log(`  访问 ${source.url.substring(0, 60)}...`);
   try {
-    console.log(`  访问 ${source.url.substring(0, 70)}...`);
     await page.goto(source.url, {
       waitUntil: source.waitUntil || "networkidle",
       timeout: source.waitUntil === "domcontentloaded" ? 60000 : 30000,
     });
+  } catch (e: any) {
+    console.log(`  ⚠ ${source.name}: ${e.message?.substring(0, 60)}`);
+    await page.close();
+    return [];
+  }
 
-    // Wait for specific selector if configured
-    if (source.waitFor) {
+  if (source.waitFor) {
+    try { await page.waitForSelector(source.waitFor, { timeout: 8000 }); } catch {}
+  }
+  await page.waitForTimeout(2000);
+
+  // Discover pagination links from page 1
+  const pageUrls = await discoverPageUrls(page, source);
+  if (pageUrls.length > 1) {
+    console.log(`  发现 ${pageUrls.length} 页可爬取`);
+  }
+
+  // Crawl each page
+  for (let i = 0; i < pageUrls.length; i++) {
+    const pageUrl = pageUrls[i];
+    const isFirstPage = i === 0;
+
+    if (!isFirstPage) {
+      console.log(`  翻页 ${i+1}/${pageUrls.length}...`);
       try {
-        await page.waitForSelector(source.waitFor, { timeout: 10000 });
+        await page.goto(pageUrl, {
+          waitUntil: source.waitUntil || "networkidle",
+          timeout: source.waitUntil === "domcontentloaded" ? 60000 : 30000,
+        });
+        await page.waitForTimeout(2000);
       } catch {
-        console.log(`  ⚠ 选择器未出现: ${source.waitFor.substring(0, 40)}，使用通用提取`);
+        console.log(`  第${i+1}页加载失败，跳过`);
+        continue;
       }
     }
 
-    // Extra wait for any remaining JS rendering
-    await page.waitForTimeout(2500);
-
-    // Generic extraction: find all content links
+    // Generic extraction
     const extracted = await page.evaluate(() => {
       const results: { text: string; href: string; date: string }[] = [];
       const seen = new Set<string>();
-
       document.querySelectorAll("a[href]").forEach((el) => {
         const a = el as HTMLAnchorElement;
         const text = a.textContent?.trim() || "";
         const href = a.href || "";
-
-        // Basic validity checks
         if (text.length < 10 || text.length > 300) return;
         if (/^(首页|下一页|上一页|更多|图片|视频|English|返回|首页$)/.test(text)) return;
         if (/javascript|mailto:|tel:/.test(href)) return;
-
-        // Only content pages (not navigation)
         const isContent =
           href.endsWith(".html") || href.endsWith(".htm") ||
           href.endsWith(".shtml") ||
           href.includes("/art/") || href.includes("/content/") ||
           href.includes("/tzgg/") || href.includes("/A07_") ||
           href.includes("/xxgk/") || href.includes("/zfxxgk/");
-
         if (!isContent) return;
-
-        // Deduplicate by URL
         if (seen.has(href)) return;
         seen.add(href);
-
-        // Extract date from nearby element
         let date = "";
         const li = el.closest("li");
         const container = li || el.parentElement;
         if (container) {
-          const dateEl =
-            container.querySelector("span, em, i, time, .date, .time, [class*='date'], [class*='time']");
+          const dateEl = container.querySelector("span, em, i, time, .date, .time, [class*='date'], [class*='time']");
           if (dateEl) date = dateEl.textContent?.trim() || "";
         }
-
         results.push({ text, href, date });
       });
-
       return results;
     });
 
-    // Filter by vocational education keywords (Node side — no serialization issues)
-    for (const link of extracted.slice(0, 30)) {
-      try {
-        if (isVocationalPolicy(link.text)) {
-          rawLinks.push(link);
-        }
-      } catch {}
+    let pageCount = 0;
+    for (const link of extracted.slice(0, 35)) {
+      if (seenUrls.has(link.href)) continue;
+      seenUrls.add(link.href);
+      if (isVocationalPolicy(link.text)) {
+        allLinks.push(link);
+        pageCount++;
+      }
     }
-  } catch (e) {
-    console.log(`  ⚠ ${source.name}: ${(e as Error).message?.substring(0, 80)}`);
-  } finally {
-    await page.close();
+    if (pageCount === 0 && !isFirstPage) break;
   }
 
-  return rawLinks;
+  await page.close();
+  return allLinks;
 }
 
 async function main() {
