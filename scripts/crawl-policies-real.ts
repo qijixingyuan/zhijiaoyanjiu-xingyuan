@@ -1,10 +1,38 @@
-// 政策爬虫 v3 — Playwright + networkidle + 通用提取
+// 政策爬虫 v4 — 正文提取 + 频控 + 源码预检
 // 运行: npx tsx scripts/crawl-policies-real.ts
 
 import { PrismaClient } from "@prisma/client";
 import { chromium } from "playwright";
+import { JSDOM } from "jsdom";
+import { Readability } from "@mozilla/readability";
 
 const prisma = new PrismaClient();
+
+// === 频控延迟（降低反爬拦截）===
+function randomDelay(min = 800, max = 3000): Promise<void> {
+  return new Promise(r => setTimeout(r, min + Math.random() * (max - min)));
+}
+
+// === 正文提取（使用 Mozilla Readability）===
+async function extractContent(html: string, url: string): Promise<string | null> {
+  try {
+    const doc = new JSDOM(html, { url });
+    const reader = new Readability(doc.window.document);
+    const article = reader.parse();
+    if (article?.textContent) {
+      return article.textContent.substring(0, 500).replace(/\s+/g, " ").trim();
+    }
+    // Fallback: plain text from body
+    const body = doc.window.document.body;
+    if (body) {
+      const text = body.textContent || "";
+      return text.replace(/\s+/g, " ").trim().substring(0, 500);
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
 
 // === 12 类分类体系 ===
 const TYPE_KEYWORDS: Record<string, string[]> = {
@@ -236,6 +264,7 @@ async function crawlSource(browser: any, source: CrawlSource): Promise<{
     const isFirstPage = i === 0;
 
     if (!isFirstPage) {
+      await randomDelay(1000, 3000); // 频控：翻页间隔
       console.log(`  翻页 ${i+1}/${pageUrls.length}...`);
       try {
         await page.goto(pageUrl, {
@@ -298,12 +327,15 @@ async function crawlSource(browser: any, source: CrawlSource): Promise<{
 }
 
 async function main() {
-  console.log("🚀 政策爬虫 v3 (Playwright + networkidle + 12源)\n");
+  console.log("🚀 政策爬虫 v4 (正文提取 + 频控 + 12源)\n");
   const browser = await chromium.launch({ headless: true });
   let totalNew = 0;
   let totalSkipped = 0;
+  let totalSummary = 0;
 
   for (const source of SOURCES) {
+    // 频控：源间随机延迟
+    await randomDelay(500, 1500);
     console.log(`\n📂 ${source.name} (${source.province})`);
     const items = await crawlSource(browser, source);
     console.log(`  筛选出 ${items.length} 条职教政策`);
@@ -344,7 +376,24 @@ async function main() {
         continue;
       }
 
-      const type = classifyPolicy(item.text, "");
+      // ── 正文提取（访问政策详情页，提取摘要）──
+      let summary = "";
+      try {
+        await randomDelay(500, 1500);
+        const detailPage = await browser.newPage();
+        await detailPage.goto(item.href, { waitUntil: "domcontentloaded", timeout: 15000 });
+        await detailPage.waitForTimeout(1000);
+        const html = await detailPage.content();
+        const extracted = await extractContent(html, item.href);
+        if (extracted) {
+          summary = extracted;
+          totalSummary++;
+          if (totalSummary <= 3) console.log(`  📝 摘要: ${extracted.substring(0, 60)}...`);
+        }
+        await detailPage.close();
+      } catch {}
+
+      const type = classifyPolicy(item.text, summary);
 
       try {
         await prisma.policy.create({
@@ -353,6 +402,7 @@ async function main() {
             province: source.province,
             publishDate,
             type,
+            summary: summary || null,
             department: source.name,
             url: item.href,
             sourceOrg: source.name,
@@ -366,7 +416,7 @@ async function main() {
   }
 
   await browser.close();
-  console.log(`\n✅ 新增: ${totalNew}, 跳过(重复): ${totalSkipped}`);
+  console.log(`\n✅ 新增: ${totalNew}, 跳过(重复): ${totalSkipped}, 摘要: ${totalSummary}`);
   const total = await prisma.policy.count();
   console.log(`总政策数: ${total}`);
   await prisma.$disconnect();
