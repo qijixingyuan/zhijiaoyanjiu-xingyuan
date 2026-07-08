@@ -66,6 +66,15 @@ function isVocationalPolicy(title: string): boolean {
   return MUST_MATCH.test(title) && !EXCLUDE.test(title);
 }
 
+// 正文职教关联验证 — 标题不匹配时，检查正文开头是否有强职教关联
+const BODY_VOC_MARKERS = /职业院校|高职院校|中等职业学校|技工学校|产教融合|校企合作|双师型|现代职业教育|职教高考|技术技能人才|大国工匠|现场工程师|学徒制|1\+X证书|职业技能|实训基地/;
+function hasVocationalContent(text: string): boolean {
+  // Only check first 800 chars of body
+  const head = text.substring(0, 800);
+  const score = (head.match(BODY_VOC_MARKERS) || []).length;
+  return score >= 2; // At least 2 vocational markers = strong association
+}
+
 // 检测地方转发/落实中央文件（避免重复入库）
 const FORWARD_PATTERN = /转发|贯彻落实|贯彻|落实.*意见|执行.*通知|实施.*办法/;
 function isForwardOfCentral(title: string, province: string): boolean {
@@ -189,6 +198,15 @@ const SOURCES: CrawlSource[] = [
   { name: "吉林省教育厅", province: "吉林省", url: "https://xxgk.jl.gov.cn/zcbm/fgw_97963/xxgkmlqy/", waitFor: "a[href]" },
   { name: "黑龙江省教育厅", province: "黑龙江省", url: "https://jyt.hlj.gov.cn/jyt/c110481/public_list.shtml", waitFor: "a[href]" },
   { name: "江西省教育厅", province: "江西省", url: "https://jyt.jiangxi.gov.cn/jxjyw/zcwj978/index.html?uid=368486&pageNum=1", waitFor: "a[href]" },
+  // ── 用户提供 URL（2026-06-29 第3批）──
+  { name: "山西省教育厅", province: "山西省", url: "https://jyt.shanxi.gov.cn/xwzx/ggtz/", waitFor: "a[href]" },
+  { name: "广西壮族自治区教育厅", province: "广西壮族自治区", url: "http://jyt.gxzf.gov.cn/zfxxgk/zc/", waitFor: "a[href]", waitUntil: "domcontentloaded" },
+  { name: "陕西省教育厅", province: "陕西省", url: "https://jyt.shaanxi.gov.cn/gk/zc/gfxwj_20255/gfxwj_20254/", waitFor: "a[href]" },
+  { name: "甘肃省教育厅", province: "甘肃省", url: "https://jyt.gansu.gov.cn/jyt/c110634/zwgklist.shtml", waitFor: "a[href]" },
+  { name: "青海省教育厅", province: "青海省", url: "https://jyt.qinghai.gov.cn/gk/tzgg/", waitFor: "a[href]" },
+  { name: "宁夏回族自治区教育厅", province: "宁夏回族自治区", url: "https://jyt.nx.gov.cn/xwdt/tzgg/", waitFor: "a[href]" },
+  { name: "新疆维吾尔自治区教育厅", province: "新疆维吾尔自治区", url: "https://jyt.xinjiang.gov.cn/edu/zxwj/list_xw.shtml", waitFor: "a[href]" },
+  { name: "西藏自治区教育厅", province: "西藏自治区", url: "http://edu.xizang.gov.cn/6/index.html", waitFor: "a[href]", waitUntil: "domcontentloaded" },
 ];
 
 /** 从第 1 页提取翻页链接 */
@@ -327,9 +345,14 @@ async function crawlSource(browser: any, source: CrawlSource): Promise<{
     for (const link of extracted.slice(0, 35)) {
       if (seenUrls.has(link.href)) continue;
       seenUrls.add(link.href);
+      // Stage 1: title keyword match (fast)
       if (isVocationalPolicy(link.text)) {
         allLinks.push(link);
         pageCount++;
+      }
+      // Stage 2: borderline — keep for later body check if URL looks like policy
+      else if (link.text.length > 15 && !/中小学|幼儿园|义务教育|普通高中/.test(link.text)) {
+        allLinks.push({ ...link, needsBodyCheck: true } as any);
       }
     }
     if (pageCount === 0 && !isFirstPage) break;
@@ -416,6 +439,20 @@ async function main() {
         }
         await detailPage.close();
       } catch {}
+
+      // ── 正文职教验证: 标题不匹配时，检查正文是否有强关联 ──
+      const titleMatch = isVocationalPolicy(item.text);
+      const needsBodyCheck = !titleMatch;
+      if (needsBodyCheck && summary) {
+        if (!hasVocationalContent(summary)) {
+          console.log(`  ⏭ 跳过(内容不相关): ${item.text.substring(0, 40)}...`);
+          continue;
+        }
+        console.log(`  ✅ 正文相关: ${item.text.substring(0, 40)}...`);
+      } else if (needsBodyCheck && !summary) {
+        // No summary extracted — fall back to title match only, skip
+        continue;
+      }
 
       const type = classifyPolicy(item.text, summary);
 
