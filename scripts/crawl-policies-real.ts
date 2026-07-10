@@ -48,6 +48,7 @@ const TYPE_KEYWORDS: Record<string, string[]> = {
   "J-国际化": ["职教出海", "中外合作", "鲁班工坊", "一带一路", "国际化"],
   "K-乡村振兴": ["对口帮扶", "东西协作", "乡村振兴", "县域职教", "民族地区"],
   "L-职业本科": ["职业本科", "职业技术大学", "中高本贯通", "职教高考", "本科层次"],
+  "M-其他": [], // 兜底: 无法明确归类时标记为其他
 };
 
 function classifyPolicy(title: string, summary: string): string {
@@ -55,7 +56,7 @@ function classifyPolicy(title: string, summary: string): string {
   for (const [type, keywords] of Object.entries(TYPE_KEYWORDS)) {
     if (keywords.some((kw) => text.includes(kw))) return type;
   }
-  return "A-治理体系";
+  return "M-其他";
 }
 
 // 关键词过滤 — 保留职教相关政策（2026-06-29 放宽）
@@ -72,7 +73,7 @@ function hasVocationalContent(text: string): boolean {
   // Only check first 800 chars of body
   const head = text.substring(0, 800);
   const score = (head.match(BODY_VOC_MARKERS) || []).length;
-  return score >= 2; // At least 2 vocational markers = strong association
+  return score >= 1; // At least 1 vocational marker = association (reduced from 2 for broader coverage)
 }
 
 // 检测地方转发/落实中央文件（避免重复入库）
@@ -144,6 +145,7 @@ const SOURCES: CrawlSource[] = [
     name: "湖南省教育厅", province: "湖南省",
     url: "https://jyt.hunan.gov.cn/jyt/sjyt/xxgk/tzgg/index.html",
     waitFor: "a[href*='/tzgg/']",
+    waitUntil: "domcontentloaded",
     paginate: { type: "index_N", maxPages: 10 },
   },
   {
@@ -206,12 +208,12 @@ const SOURCES: CrawlSource[] = [
   { name: "安徽省教育厅", province: "安徽省", url: "https://jyt.ah.gov.cn/xwzx/tzgg/", waitFor: "a[href]", waitUntil: "domcontentloaded" },
   { name: "内蒙古自治区教育厅", province: "内蒙古自治区", url: "https://jyt.nmg.gov.cn/zwgk/tzgg_25132/", waitFor: "a[href]", waitUntil: "domcontentloaded" },
   { name: "上海市教育委员会", province: "上海市", url: "https://edu.sh.gov.cn/xxgk2_zdgz/", waitFor: "a[href]", waitUntil: "domcontentloaded" },
-  { name: "重庆市教育委员会", province: "重庆市", url: "https://jw.cq.gov.cn/zwgk/zfxxgkml/zcwj/", waitFor: "a[href]", waitUntil: "domcontentloaded" },
+  { name: "重庆市教育委员会", province: "重庆市", url: "https://jw.cq.gov.cn/zwxx_209/gggs/", waitFor: "a[href]", waitUntil: "domcontentloaded" },
   // ── 用户验证 URL（2026-06-29）──
-  { name: "辽宁省教育厅", province: "辽宁省", url: "https://jyt.ln.gov.cn/jyt/gk/jywj/index.shtml", waitFor: "a[href]", waitUntil: "domcontentloaded" },
+  { name: "辽宁省教育厅", province: "辽宁省", url: "https://jyt.ln.gov.cn/jyt/index/zyjy/index.shtml", waitFor: "a[href]", waitUntil: "domcontentloaded" },
   { name: "吉林省教育厅", province: "吉林省", url: "https://xxgk.jl.gov.cn/zcbm/fgw_97963/xxgkmlqy/", waitFor: "a[href]" },
   { name: "黑龙江省教育厅", province: "黑龙江省", url: "https://jyt.hlj.gov.cn/jyt/c110481/public_list.shtml", waitFor: "a[href]" },
-  { name: "江西省教育厅", province: "江西省", url: "http://jyt.jiangxi.gov.cn/jxjyw/zcwj978/index.html", waitFor: "a[href]", waitUntil: "domcontentloaded" },
+  { name: "江西省教育厅", province: "江西省", url: "http://jyt.jiangxi.gov.cn/jxjyw/tzgg785/index.html", waitFor: "a[href]", waitUntil: "domcontentloaded" },
   // ── 用户提供 URL（2026-06-29 第3批）──
   { name: "山西省教育厅", province: "山西省", url: "https://jyt.shanxi.gov.cn/xwzx/ggtz/", waitFor: "a[href]" },
   { name: "广西壮族自治区教育厅", province: "广西壮族自治区", url: "http://jyt.gxzf.gov.cn/zfxxgk/zc/gfxwj/index.shtml", waitFor: "a[href]", waitUntil: "domcontentloaded" },
