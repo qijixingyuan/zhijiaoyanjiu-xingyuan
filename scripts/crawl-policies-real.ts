@@ -200,7 +200,7 @@ const SOURCES: CrawlSource[] = [
     waitFor: "a[href*='/zfxxgk/']",
   },
   // ── 新扩展省份（2026-06-29 验证）──
-  { name: "北京市教育委员会", province: "北京市", url: "https://jw.beijing.gov.cn/tzgg/", waitFor: "a[href]", },
+  { name: "北京市教育委员会", province: "北京市", url: "https://jw.beijing.gov.cn/tzgg/", waitFor: "a[href]", paginate: { type: "index_N", maxPages: 15 } },
   { name: "天津市教育委员会", province: "天津市", url: "https://jy.tj.gov.cn/ZWGK_52172/TZGG/", waitFor: "a[href]", waitUntil: "domcontentloaded" },
   { name: "海南省教育厅", province: "海南省", url: "https://edu.hainan.gov.cn/xxgk/tzgg/", waitFor: "a[href]", waitUntil: "domcontentloaded" },
   { name: "贵州省教育厅", province: "贵州省", url: "https://jyt.guizhou.gov.cn/zwgk/tzgg/", waitFor: "a[href]", waitUntil: "domcontentloaded" },
@@ -261,7 +261,8 @@ async function discoverSubCategories(page: any, source: CrawlSource): Promise<st
 
 /** 从第 1 页提取翻页链接 */
 async function discoverPageUrls(page: any, source: CrawlSource): Promise<string[]> {
-  if (!source.paginate) return [source.url];
+  // Auto-detect pagination even without explicit config (max 5 pages default)
+  const maxPages = source.paginate?.maxPages || 5;
 
   const urls: string[] = [source.url];
   try {
@@ -298,7 +299,7 @@ async function discoverPageUrls(page: any, source: CrawlSource): Promise<string[
         }
       }
       return pageUrls;
-    }, source.paginate.maxPages);
+    }, maxPages);
 
     for (const u of found) {
       if (!urls.includes(u)) urls.push(u);
