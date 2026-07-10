@@ -82,6 +82,20 @@ function isForwardOfCentral(title: string, province: string): boolean {
   return FORWARD_PATTERN.test(title);
 }
 
+// 检测外链到中央/其他政府网站（避免收录非本省政策）
+// 仅过滤明确的外链：国务院、教育部等中央部委网站
+const CENTRAL_DOMAINS = /^(www\.gov\.cn|moe\.gov\.cn|www\.moe\.gov\.cn|szs\.gov\.cn)$/;
+function isExternalCentralLink(url: string, sourceProvince: string): boolean {
+  if (sourceProvince === "全国") return false;
+  try {
+    const hostname = new URL(url).hostname;
+    // Articles linking to central government domains are not provincial policies
+    return CENTRAL_DOMAINS.test(hostname);
+  } catch {
+    return false;
+  }
+}
+
 // 从 URL 路径中提取日期
 function extractDateFromUrl(url: string): Date | null {
   // Pattern: /202606/t20260626_xxx.shtml (湖北: YYYYMM/tYYYYMMDD_)
@@ -128,7 +142,7 @@ const SOURCES: CrawlSource[] = [
   // ── 省级教育厅 (已验证) ──
   {
     name: "湖南省教育厅", province: "湖南省",
-    url: "https://jyt.hunan.gov.cn/jyt/sjyt/xxgk/tzgg/",
+    url: "https://jyt.hunan.gov.cn/jyt/sjyt/xxgk/tzgg/index.html",
     waitFor: "a[href*='/tzgg/']",
     paginate: { type: "index_N", maxPages: 10 },
   },
@@ -185,29 +199,63 @@ const SOURCES: CrawlSource[] = [
   },
   // ── 新扩展省份（2026-06-29 验证）──
   { name: "北京市教育委员会", province: "北京市", url: "https://jw.beijing.gov.cn/tzgg/", waitFor: "a[href]", },
-  { name: "天津市教育委员会", province: "天津市", url: "https://jy.tj.gov.cn/ZWGK_52172/TZGG/", waitFor: "a[href]", },
-  { name: "海南省教育厅", province: "海南省", url: "https://edu.hainan.gov.cn/xxgk/tzgg/", waitFor: "a[href]", },
-  { name: "贵州省教育厅", province: "贵州省", url: "https://jyt.guizhou.gov.cn/zwgk/tzgg/", waitFor: "a[href]", },
-  { name: "云南省教育厅", province: "云南省", url: "https://jyt.yn.gov.cn/web/zwgk/tzgg/", waitFor: "a[href]", },
-  { name: "安徽省教育厅", province: "安徽省", url: "https://jyt.ah.gov.cn/xwzx/tzgg/", waitFor: "a[href]", },
-  { name: "内蒙古自治区教育厅", province: "内蒙古自治区", url: "https://jyt.nmg.gov.cn/zwgk/tzgg_25132/", waitFor: "a[href]", },
-  { name: "上海市教育委员会", province: "上海市", url: "https://edu.sh.gov.cn/xxgk2_zdgz/", waitFor: "a[href]", },
-  { name: "重庆市教育委员会", province: "重庆市", url: "https://jw.cq.gov.cn/zwgk/zfxxgkml/zcwj/", waitFor: "a[href]", },
+  { name: "天津市教育委员会", province: "天津市", url: "https://jy.tj.gov.cn/ZWGK_52172/TZGG/", waitFor: "a[href]", waitUntil: "domcontentloaded" },
+  { name: "海南省教育厅", province: "海南省", url: "https://edu.hainan.gov.cn/xxgk/tzgg/", waitFor: "a[href]", waitUntil: "domcontentloaded" },
+  { name: "贵州省教育厅", province: "贵州省", url: "https://jyt.guizhou.gov.cn/zwgk/tzgg/", waitFor: "a[href]", waitUntil: "domcontentloaded" },
+  { name: "云南省教育厅", province: "云南省", url: "https://jyt.yn.gov.cn/web/zwgk/tzgg/", waitFor: "a[href]", waitUntil: "domcontentloaded" },
+  { name: "安徽省教育厅", province: "安徽省", url: "https://jyt.ah.gov.cn/xwzx/tzgg/", waitFor: "a[href]", waitUntil: "domcontentloaded" },
+  { name: "内蒙古自治区教育厅", province: "内蒙古自治区", url: "https://jyt.nmg.gov.cn/zwgk/tzgg_25132/", waitFor: "a[href]", waitUntil: "domcontentloaded" },
+  { name: "上海市教育委员会", province: "上海市", url: "https://edu.sh.gov.cn/xxgk2_zdgz/", waitFor: "a[href]", waitUntil: "domcontentloaded" },
+  { name: "重庆市教育委员会", province: "重庆市", url: "https://jw.cq.gov.cn/zwgk/zfxxgkml/zcwj/", waitFor: "a[href]", waitUntil: "domcontentloaded" },
   // ── 用户验证 URL（2026-06-29）──
   { name: "辽宁省教育厅", province: "辽宁省", url: "https://jyt.ln.gov.cn/jyt/gk/jywj/index.shtml", waitFor: "a[href]", waitUntil: "domcontentloaded" },
   { name: "吉林省教育厅", province: "吉林省", url: "https://xxgk.jl.gov.cn/zcbm/fgw_97963/xxgkmlqy/", waitFor: "a[href]" },
   { name: "黑龙江省教育厅", province: "黑龙江省", url: "https://jyt.hlj.gov.cn/jyt/c110481/public_list.shtml", waitFor: "a[href]" },
-  { name: "江西省教育厅", province: "江西省", url: "https://jyt.jiangxi.gov.cn/jxjyw/zcwj978/index.html?uid=368486&pageNum=1", waitFor: "a[href]" },
+  { name: "江西省教育厅", province: "江西省", url: "http://jyt.jiangxi.gov.cn/jxjyw/zcwj978/index.html", waitFor: "a[href]", waitUntil: "domcontentloaded" },
   // ── 用户提供 URL（2026-06-29 第3批）──
   { name: "山西省教育厅", province: "山西省", url: "https://jyt.shanxi.gov.cn/xwzx/ggtz/", waitFor: "a[href]" },
-  { name: "广西壮族自治区教育厅", province: "广西壮族自治区", url: "http://jyt.gxzf.gov.cn/zfxxgk/zc/", waitFor: "a[href]", waitUntil: "domcontentloaded" },
+  { name: "广西壮族自治区教育厅", province: "广西壮族自治区", url: "http://jyt.gxzf.gov.cn/zfxxgk/zc/gfxwj/index.shtml", waitFor: "a[href]", waitUntil: "domcontentloaded" },
   { name: "陕西省教育厅", province: "陕西省", url: "https://jyt.shaanxi.gov.cn/gk/zc/gfxwj_20255/gfxwj_20254/", waitFor: "a[href]" },
-  { name: "甘肃省教育厅", province: "甘肃省", url: "https://jyt.gansu.gov.cn/jyt/c110634/zwgklist.shtml", waitFor: "a[href]" },
-  { name: "青海省教育厅", province: "青海省", url: "https://jyt.qinghai.gov.cn/gk/tzgg/", waitFor: "a[href]" },
-  { name: "宁夏回族自治区教育厅", province: "宁夏回族自治区", url: "https://jyt.nx.gov.cn/xwdt/tzgg/", waitFor: "a[href]" },
+  { name: "甘肃省教育厅", province: "甘肃省", url: "https://jyt.gansu.gov.cn/jyt/c110634/zwgklist.shtml", waitFor: "a[href]", waitUntil: "domcontentloaded" },
+  { name: "青海省教育厅", province: "青海省", url: "https://jyt.qinghai.gov.cn/gk/tzgg/index.html", waitFor: "a[href]" },
+  { name: "宁夏回族自治区教育厅", province: "宁夏回族自治区", url: "https://jyt.nx.gov.cn/xwdt/tzgg/", waitFor: "a[href]", waitUntil: "domcontentloaded" },
   { name: "新疆维吾尔自治区教育厅", province: "新疆维吾尔自治区", url: "https://jyt.xinjiang.gov.cn/edu/zxwj/list_xw.shtml", waitFor: "a[href]" },
   { name: "西藏自治区教育厅", province: "西藏自治区", url: "http://edu.xizang.gov.cn/6/index.html", waitFor: "a[href]", waitUntil: "domcontentloaded" },
 ];
+
+/** 从门户页发现子栏目页面（适用西藏、甘肃等三级结构网站） */
+async function discoverSubCategories(page: any, source: CrawlSource): Promise<string[]> {
+  const subCats: string[] = [];
+  try {
+    const found = await page.evaluate(() => {
+      const results: string[] = [];
+      const seen = new Set<string>();
+      // Only follow sub-categories relevant to policy/announcements
+      const RELEVANT = /通知|公告|公示|政策|文件|法规|政务|公开|职业|教育|招生|考试|规范性|zwgk|xxgk|tzgg|zc|wj|政策文件|信息公开|重要|工作|规划|经费|质量|评估/;
+      document.querySelectorAll("a[href]").forEach((el) => {
+        const a = el as HTMLAnchorElement;
+        const href = a.href || "";
+        const text = (a.innerText || a.textContent || "").trim();
+        // Sub-category: links to /XX/index.html pattern (not the current page)
+        if (!/index\.(html|htm|shtml)/i.test(href)) return;
+        if (href === window.location.href) return;
+        if (text.length < 4) return;
+        if (/^(首页|上一页|下一页|尾页|末页|返回)$/.test(text)) return;
+        // Skip irrelevant sub-categories (机构设置, 领导信息, etc.)
+        if (!RELEVANT.test(text) && !RELEVANT.test(href)) return;
+        if (seen.has(href)) return;
+        seen.add(href);
+        results.push(href);
+      });
+      return results;
+    });
+    for (const u of found) {
+      if (!subCats.includes(u)) subCats.push(u);
+    }
+  } catch {}
+  // Cap to prevent excessive crawling (max 20 sub-categories)
+  return subCats.slice(0, 20);
+}
 
 /** 从第 1 页提取翻页链接 */
 async function discoverPageUrls(page: any, source: CrawlSource): Promise<string[]> {
@@ -257,10 +305,10 @@ async function discoverPageUrls(page: any, source: CrawlSource): Promise<string[
   return urls;
 }
 
-async function crawlSource(browser: any, source: CrawlSource): Promise<{
+async function crawlSource(context: any, source: CrawlSource): Promise<{
   title: string; url: string; date: string;
 }[]> {
-  const page = await browser.newPage();
+  const page = await context.newPage();
   const allLinks: { title: string; url: string; date: string }[] = [];
   const seenUrls = new Set<string>();
 
@@ -282,20 +330,33 @@ async function crawlSource(browser: any, source: CrawlSource): Promise<{
   }
   await page.waitForTimeout(2000);
 
+  // Discover sub-category pages (portal pages like 西藏 /6/index.html)
+  const subCats = await discoverSubCategories(page, source);
+  if (subCats.length > 0) {
+    console.log(`  发现 ${subCats.length} 个子栏目`);
+  }
+
   // Discover pagination links from page 1
   const pageUrls = await discoverPageUrls(page, source);
   if (pageUrls.length > 1) {
     console.log(`  发现 ${pageUrls.length} 页可爬取`);
   }
 
+  // Merge: main page + sub-categories + pagination
+  // If sub-categories found, crawl them as additional "pages"
+  const allPageUrls = [...pageUrls];
+  for (const subCat of subCats) {
+    if (!allPageUrls.includes(subCat)) allPageUrls.push(subCat);
+  }
+
   // Crawl each page
-  for (let i = 0; i < pageUrls.length; i++) {
-    const pageUrl = pageUrls[i];
+  for (let i = 0; i < allPageUrls.length; i++) {
+    const pageUrl = allPageUrls[i];
     const isFirstPage = i === 0;
 
     if (!isFirstPage) {
       await randomDelay(1000, 3000); // 频控：翻页间隔
-      console.log(`  翻页 ${i+1}/${pageUrls.length}...`);
+      console.log(`  翻页 ${i+1}/${allPageUrls.length}...`);
       try {
         await page.goto(pageUrl, {
           waitUntil: source.waitUntil || "networkidle",
@@ -312,23 +373,39 @@ async function crawlSource(browser: any, source: CrawlSource): Promise<{
     const extracted = await page.evaluate(() => {
       const results: { text: string; href: string; date: string }[] = [];
       const seen = new Set<string>();
-      document.querySelectorAll("a[href]").forEach((el) => {
+      document.querySelectorAll("a[href], a[onclick]").forEach((el) => {
         const a = el as HTMLAnchorElement;
-        // Use innerText to exclude <script> content (e.g. document.write pages)
-        const text = (a.innerText || a.textContent || "").trim();
+        // Improved text extraction + onclick (fdoc) support
+        let text = (a.innerText || a.textContent || "").trim();
+        // Filter out document.write JS code leaked as text (湖南)
+        if (/^(var\s|document\.write|document\.writeln|str\s*=)/.test(text)) return;
+        if (text.length < 10) {
+          const parent = a.closest("td") || a.closest("li") || a.parentElement;
+          if (parent) {
+            const pt = (parent.innerText || parent.textContent || "").trim();
+            if (pt.length >= 10 && pt.length <= 300) text = pt;
+          }
+        }
         const href = a.href || "";
-        if (text.length < 10 || text.length > 300) return;
-        if (/^(首页|下一页|上一页|更多|图片|视频|English|返回|首页$)/.test(text)) return;
-        if (/javascript|mailto:|tel:/.test(href)) return;
-        const isContent =
-          href.endsWith(".html") || href.endsWith(".htm") ||
-          href.endsWith(".shtml") ||
-          href.includes("/art/") || href.includes("/content/") ||
-          href.includes("/tzgg/") || href.includes("/A07_") ||
-          href.includes("/xxgk/") || href.includes("/zfxxgk/");
-        if (!isContent) return;
-        if (seen.has(href)) return;
-        seen.add(href);
+        const onclick = a.getAttribute("onclick") || "";
+        // fdoc('ID') pattern (青海): use synthetic URL with doc ID
+        const fdocMatch = onclick.match(/fdoc\('(\d+)'\)/);
+        const isOnclickLink = !!fdocMatch;
+        if (!isOnclickLink) {
+          if (/javascript|mailto:|tel:/.test(href)) return;
+          const isContent =
+            href.endsWith(".html") || href.endsWith(".htm") ||
+            href.endsWith(".shtml") ||
+            href.includes("/art/") || href.includes("/content/") ||
+            href.includes("/tzgg/") || href.includes("/A07_") ||
+            href.includes("/xxgk/") || href.includes("/zfxxgk/");
+          if (!isContent) return;
+        }
+        const finalHref = isOnclickLink
+          ? `${window.location.origin}${window.location.pathname.replace(/\/[^/]*$/, "")}/idoc.html?doc=${fdocMatch![1]}`
+          : href;
+        if (seen.has(finalHref)) return;
+        seen.add(finalHref);
         let date = "";
         const li = el.closest("li");
         const container = li || el.parentElement;
@@ -336,7 +413,12 @@ async function crawlSource(browser: any, source: CrawlSource): Promise<{
           const dateEl = container.querySelector("span, em, i, time, .date, .time, [class*='date'], [class*='time']");
           if (dateEl) date = dateEl.textContent?.trim() || "";
         }
-        results.push({ text, href, date });
+        const result: any = { text, href: finalHref, date };
+        if (isOnclickLink) {
+          result.onclickDocId = fdocMatch![1];
+          result.onclickSource = window.location.href;
+        }
+        results.push(result);
       });
       return results;
     });
@@ -363,8 +445,31 @@ async function crawlSource(browser: any, source: CrawlSource): Promise<{
 }
 
 async function main() {
-  console.log("🚀 政策爬虫 v4 (正文提取 + 频控 + 12源)\n");
-  const browser = await chromium.launch({ headless: true });
+  console.log("🚀 政策爬虫 v5 (正文提取 + 频控 + 子栏目发现 + UA伪装 + Stealth)\n");
+  const browser = await chromium.launch({
+    headless: true,
+    args: [
+      "--disable-blink-features=AutomationControlled",
+      "--no-sandbox",
+      "--disable-dev-shm-usage",
+    ],
+  });
+  // Set realistic browser context to bypass WAF
+  const context = await browser.newContext({
+    userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+    viewport: { width: 1920, height: 1080 },
+    locale: "zh-CN",
+  });
+  // Remove webdriver detection
+  await context.addInitScript(() => {
+    Object.defineProperty(navigator, "webdriver", { get: () => false });
+    (window as any).chrome = { runtime: {} };
+    const originalQuery = window.navigator.permissions.query;
+    (window.navigator.permissions.query as any) = (parameters: any) =>
+      parameters.name === "notifications"
+        ? Promise.resolve({ state: Notification.permission } as PermissionStatus)
+        : originalQuery(parameters);
+  });
   let totalNew = 0;
   let totalSkipped = 0;
   let totalSummary = 0;
@@ -373,7 +478,7 @@ async function main() {
     // 频控：源间随机延迟
     await randomDelay(500, 1500);
     console.log(`\n📂 ${source.name} (${source.province})`);
-    const items = await crawlSource(browser, source);
+    const items = await crawlSource(context, source);
     console.log(`  筛选出 ${items.length} 条职教政策`);
 
     for (const item of items) {
@@ -390,6 +495,12 @@ async function main() {
           console.log(`  ⏭ 跳过(地方转发): ${item.text.substring(0, 40)}...`);
           continue;
         }
+      }
+
+      // 跳过外链到中央网站的转载文章（避免收录非本省政策）
+      if (isExternalCentralLink(item.href, source.province)) {
+        console.log(`  ⏭ 跳过(外链): ${item.text.substring(0, 40)}...`);
+        continue;
       }
 
       // 解析日期 — 优先 HTML 中提取的 date text，其次 URL 中的日期
@@ -427,9 +538,38 @@ async function main() {
       let summary = "";
       try {
         await randomDelay(500, 1500);
-        const detailPage = await browser.newPage();
-        await detailPage.goto(item.href, { waitUntil: "domcontentloaded", timeout: 15000 });
-        await detailPage.waitForTimeout(1000);
+        const detailPage = await context.newPage();
+        // Handle fdoc onclick links (青海): need to call fdoc(id) first to set session
+        if ((item as any).onclickDocId && (item as any).onclickSource) {
+          // Step 1: Go to list page to get session + fdoc function
+          await detailPage.goto((item as any).onclickSource, {
+            waitUntil: "domcontentloaded", timeout: 15000,
+          });
+          await detailPage.waitForTimeout(1000);
+          // Step 2: Call fdoc(id) to set server session
+          await detailPage.evaluate((docId: string) => {
+            return new Promise<void>((resolve) => {
+              try {
+                const fdoc = (window as any).fdoc;
+                if (typeof fdoc === "function") {
+                  // Call fdoc, then wait for XHR before resolving
+                  fdoc(docId);
+                  setTimeout(resolve, 2000);
+                } else {
+                  resolve();
+                }
+              } catch { resolve(); }
+            });
+          }, (item as any).onclickDocId);
+          await detailPage.waitForTimeout(1500);
+          // Step 3: Navigate to idoc.html (strip doc param from URL)
+          const idocUrl = item.href.replace(/\?doc=.*$/, "");
+          await detailPage.goto(idocUrl, { waitUntil: "domcontentloaded", timeout: 15000 });
+          await detailPage.waitForTimeout(1000);
+        } else {
+          await detailPage.goto(item.href, { waitUntil: "domcontentloaded", timeout: 15000 });
+          await detailPage.waitForTimeout(1000);
+        }
         const html = await detailPage.content();
         const extracted = await extractContent(html, item.href);
         if (extracted) {
@@ -476,6 +616,7 @@ async function main() {
     }
   }
 
+  await context.close();
   await browser.close();
   console.log(`\n✅ 新增: ${totalNew}, 跳过(重复): ${totalSkipped}, 摘要: ${totalSummary}`);
   const total = await prisma.policy.count();

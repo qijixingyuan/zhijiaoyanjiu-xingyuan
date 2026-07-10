@@ -271,3 +271,26 @@
 - ✅ **频控延迟**: 源间 0.5-1.5s，翻页 1-3s，详情页 0.5-1.5s 随机间隔
 - ⏳ **GNE 替代**: 当前用 Readability，后续可替换为 GNE（更适合中文政策页面）
 - ⏳ **LLM 精准分类**: 有了 summary 后，可用 DeepSeek 做精准分类（替代关键词匹配）
+
+### v5 已实现（2026-07-10）
+
+- ✅ **子栏目自动发现**: 门户页（如西藏 /6/index.html）自动发现子栏目 `/6/XX/index.html` 并递归爬取
+- ✅ **表格布局文本提取**: `<a>` 无文本时从父元素 `<td>`/`<li>` 获取（广西等）
+- ✅ **onclick 链接支持**: 识别 `onclick="fdoc('ID')"` 模式并构造合成 URL（青海）
+- ✅ **UA 伪装 + Stealth**: Chrome UA + `navigator.webdriver` 覆盖 + permissions 伪装，绕过宁夏/甘肃 WAF
+- ✅ **青海 URL**: 从 `/gk/tzgg/` 改为 `/gk/tzgg/index.html`（桌面版）
+- ✅ **广西 URL**: 从 `/zfxxgk/zc/` 改为 `/zfxxgk/zc/gfxwj/index.shtml`（行政规范性文件）
+
+### 5省0条政策根因分析（2026-07-10）
+
+| 省份 | 问题类型 | 根因 | 解决方案 |
+|------|------|------|------|
+| 西藏 | 门户页 | `/6/index.html` 无文章链接，内容在子栏目 | 自动发现子栏目 + 递归爬取 |
+| 广西 | 表格布局 | `<a>` 标签 `innerText` 为空，文字在父元素 | 文本提取 fallback 到父 `<td>`/`<li>` |
+| 广西 | 错误URL | `/zfxxgk/zc/` 是动态表格页，文章在子栏目的 `gfxwj/` | 改为行政规范性文件页面 |
+| 青海 | onclick | 链接使用 `onclick="fdoc('ID')"` 而非 `href` | 识别 fdoc 模式，构造合成 URL |
+| 青海 | 移动版 | `/gk/tzgg/` 默认移动版，桌面版在 `index.html` | 改为桌面版 URL |
+| 宁夏 | WAF | 默认 Playwright UA 被 WAF 拦截（405） | Chrome UA 伪装 |
+| 甘肃 | WAF (强) | `navigator.webdriver` 被检测，返回 412/400 | Stealth 模式（disable-blink-features + addInitScript） |
+
+**关键教训**: 中国政务网站反爬策略差异极大，需要多层 fallback：UA 伪装 → Stealth 检测规避 → 子栏目递归 → DOM 文本 fallback → onclick 识别。
