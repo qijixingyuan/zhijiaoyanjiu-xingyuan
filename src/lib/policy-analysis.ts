@@ -43,6 +43,29 @@ export function isJointDocument(department: string | null): boolean {
   return false;
 }
 
+/** 从标题提取多机构名（联合发文信息常在标题而非 department 字段） */
+export function extractDepartmentsFromTitle(title: string): string[] {
+  const raw = title.match(/[一-龥]{2,14}(?:教育厅|财政厅|厅|委员会|局|部)/g) || [];
+  // 过滤误报: "XX职业技术学院章程部"、"部分" 等
+  const filtered = raw.filter((s) => {
+    if (s.includes("章程") || s.includes("学院") || s.includes("学校")) return false;
+    if (s.endsWith("部分")) return false;
+    // "部" 结尾且超过 6 字时，仅保留中央部门固定名
+    if (s.endsWith("部") && s.length > 6) {
+      return /^(教育部|财政部|科技部|工信部|人力资源和社会保障部)/.test(s);
+    }
+    return true;
+  });
+  // 去重（"教育厅" 与 "省教育厅" 并存时保留更长的）
+  const seen = new Map<string, string>();
+  for (const m of filtered) {
+    const key = m.endsWith("教育厅") ? "教育厅" : m;
+    const prev = seen.get(key);
+    if (!prev || m.length > prev.length) seen.set(key, m);
+  }
+  return Array.from(seen.values());
+}
+
 // ---------------- 维度 1: 演进趋势（年 × 类型堆叠面积） ----------------
 export interface TrendView {
   years: number[];
@@ -181,14 +204,21 @@ export function buildDepartmentView(rows: PolicyRow[]): DepartmentView {
     const tags = resolveTags(row);
     if (tags.length > 0) entry.byType.set(tags[0], (entry.byType.get(tags[0]) || 0) + 1);
 
+    // 联合发文: department 字段优先，其次从标题提取多机构
+    let jointParts: string[] = [];
     if (isJointDocument(row.department)) {
+      jointParts = row.department!.split(/[、，,；;]/).map((s) => s.trim()).filter(Boolean);
+    } else {
+      const fromTitle = extractDepartmentsFromTitle(row.title);
+      if (fromTitle.length >= 2) jointParts = fromTitle;
+    }
+    if (jointParts.length >= 2) {
       jointCount++;
       if (jointDocs.length < 50) {
-        const parts = row.department!.split(/[、，,；;]/).map((s) => s.trim()).filter(Boolean);
         jointDocs.push({
           id: row.id,
           title: row.title,
-          departments: parts,
+          departments: jointParts,
           publishDate: row.publishDate.toISOString().split("T")[0],
         });
       }

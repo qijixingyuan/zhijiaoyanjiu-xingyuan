@@ -3,8 +3,10 @@
 import { useState, useEffect, useCallback } from "react";
 import ReactECharts from "echarts-for-react";
 import { CrossStatRow } from "@/types";
+import PolicyAnalysis from "./PolicyAnalysis";
 
 export default function StatsPanel() {
+  const [subTab, setSubTab] = useState<"college" | "policy">("college");
   const [rowDim, setRowDim] = useState("province");
   const [metrics, setMetrics] = useState<string[]>(["count"]);
   const [data, setData] = useState<CrossStatRow[]>([]);
@@ -52,7 +54,8 @@ export default function StatsPanel() {
 
   return (
     <div className="flex h-full overflow-hidden">
-      {/* Left: Config Panel */}
+      {/* Left: Config Panel — 仅院校统计子标签显示 */}
+      {subTab === "college" && (
       <div className="w-[220px] border-r border-[#D8E2F0] bg-white flex flex-col flex-shrink-0 overflow-y-auto">
         <div className="px-4 py-4 border-b border-[#D8E2F0]">
           <h2 className="text-sm font-bold text-[#0C2340] mb-4">数据统计后台</h2>
@@ -93,9 +96,27 @@ export default function StatsPanel() {
           </button>
         </div>
       </div>
+      )}
 
       {/* Right: Visualization */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div className="flex-1 overflow-hidden flex flex-col">
+        {/* 子标签: 院校统计 / 政策分析 */}
+        <div className="flex items-center gap-1 px-4 py-2.5 bg-white border-b border-[#D8E2F0] flex-shrink-0">
+          {[{ k: "college", l: "院校统计" }, { k: "policy", l: "政策分析" }].map((t) => (
+            <button
+              key={t.k}
+              onClick={() => setSubTab(t.k as "college" | "policy")}
+              className={`px-4 py-1.5 text-xs rounded-full transition-colors cursor-pointer ${subTab === t.k ? "bg-[#0C2340] text-white" : "bg-[#F2F5FA] text-[#1A2742] hover:bg-gray-200"}`}
+            >
+              {t.l}
+            </button>
+          ))}
+        </div>
+
+        {subTab === "policy" ? (
+          <PolicyAnalysis />
+        ) : (
+        <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {loading ? (
           <div className="flex items-center justify-center h-48"><div className="animate-spin h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full" /></div>
         ) : (
@@ -144,6 +165,8 @@ export default function StatsPanel() {
               </div>
             </div>
           </>
+        )}
+        </div>
         )}
       </div>
     </div>
