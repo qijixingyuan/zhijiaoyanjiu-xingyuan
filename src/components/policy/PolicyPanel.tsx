@@ -5,7 +5,7 @@ import { PolicyItem } from "@/types";
 import PolicyModal from "./PolicyModal";
 import PolicyFormModal from "./PolicyFormModal";
 import { PROVINCES } from "@/lib/china-geo";
-import { TYPE_CLASSES, TYPE_LABELS, splitTags, normalizeTag, getTypeLabel } from "@/lib/policy-types";
+import { TYPE_CLASSES, TYPE_LABELS, TYPE_ORDER, splitTags, normalizeTag, getTypeLabel } from "@/lib/policy-types";
 
 interface SmartFilter {
   province: string | null;
@@ -172,13 +172,14 @@ export default function PolicyPanel({ filters }: PolicyPanelProps) {
           </select>
           <span className="text-[11px] text-[#5A6A85] ml-1">类型:</span>
           <div className="flex gap-1 flex-wrap">
-            {Object.entries(TYPE_LABELS).map(([k, v]) => {
+            {TYPE_ORDER.map((code) => {
+              const k = `${code}-${TYPE_LABELS[code]}`;
               const cls = TYPE_CLASSES[k] || "bg-gray-100 text-gray-600";
               return (
                 <button key={k} onClick={() => { setSelType(selType === k ? "" : k); setPage(1); }}
                   className={`px-2 py-0.5 text-[11px] rounded-full whitespace-nowrap transition-colors ${
                     selType === k ? "bg-[#1A56A0] text-white" : cls
-                  }`}>{v}</button>
+                  }`}>{TYPE_LABELS[code]}</button>
               );
             })}
           </div>

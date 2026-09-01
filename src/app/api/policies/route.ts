@@ -15,7 +15,11 @@ export async function GET(request: NextRequest) {
   const where: Record<string, unknown> = {};
 
   if (province) where.province = province;
-  if (type) where.type = type;
+  if (type) {
+    // 兼容单字母 "A" 与全名 "A-治理体系" 两种传入格式
+    const norm = (type.match(/^([A-L])(?:-|$)/) || [])[1];
+    where.type = norm ? `${norm}-${TYPE_LABELS[norm]}` : type;
+  }
 
   if (yearFrom || yearTo) {
     const dateFilter: Record<string, Date> = {};
