@@ -8,3 +8,4 @@ prisma/dev.db-journal
 crawler-diag/
 debug_*.png
 pending-urls.txt
+scripts/crawl-state.json
