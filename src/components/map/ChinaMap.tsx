@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useMemo } from "react";
 import ReactECharts from "echarts-for-react";
-import * as echarts from "echarts";
 import { GeoData } from "@/types";
+import { useChinaGeo } from "@/lib/use-china-geo";
 
 interface ChinaMapProps {
   data: GeoData[];
@@ -16,25 +16,8 @@ interface ChinaMapProps {
 const EXCLUDED_PROVINCES = new Set(["台湾省", "香港特别行政区", "澳门特别行政区"]);
 
 export default function ChinaMap({ data, viewMode, onProvinceClick, onBackToProvince }: ChinaMapProps) {
-  // geoLoaded: null=loading, false=failed, true=registered
-  const [geoLoaded, setGeoLoaded] = useState<boolean | null>(null);
-
-  // Step 1: Load GeoJSON and register globally ONCE via echarts.registerMap
-  useEffect(() => {
-    let cancelled = false;
-    fetch("/china.json")
-      .then((r) => r.json())
-      .then((json) => {
-        if (cancelled) return;
-        // Register on echarts global — the ONLY correct place
-        echarts.registerMap("china", json);
-        setGeoLoaded(true);
-      })
-      .catch(() => {
-        if (!cancelled) setGeoLoaded(false);
-      });
-    return () => { cancelled = true; };
-  }, []);
+  // GeoJSON 加载 + 全局 registerMap（共享 hook，模块级缓存防重复 fetch）
+  const { geoLoaded, retry } = useChinaGeo();
 
   // Build option (memoized to avoid unnecessary ReactECharts re-renders)
   const option = useMemo(() => {
@@ -116,7 +99,10 @@ export default function ChinaMap({ data, viewMode, onProvinceClick, onBackToProv
   if (geoLoaded === false) {
     return (
       <div className="bg-white rounded-lg border border-gray-200 flex items-center justify-center h-[550px]">
-        <p className="text-red-500">地图数据加载失败，请刷新重试</p>
+        <div className="text-center">
+          <p className="text-red-500 mb-3">地图数据加载失败</p>
+          <button onClick={retry} className="text-sm text-blue-600 hover:underline">重试</button>
+        </div>
       </div>
     );
   }
