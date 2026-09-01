@@ -4,24 +4,7 @@ import { useState, useEffect } from "react";
 import { PolicyItem } from "@/types";
 import PolicyModal from "./PolicyModal";
 import { PROVINCES } from "@/lib/china-geo";
-
-const POLICY_TYPES = ["全部", "发展规划", "经费保障", "专业设置", "质量评估", "招生就业", "对口援助"];
-
-const TYPE_CLASSES: Record<string, string> = {
-  "A-治理体系": "bg-[#FEF3C7] text-[#92400E]", "B-产教融合": "bg-[#FEE2E2] text-[#991B1B]",
-  "C-人才培养": "bg-[#D1FAE5] text-[#065F46]", "D-专业建设": "bg-[#DBEAFE] text-[#1D4ED8]",
-  "E-师资队伍": "bg-[#EDE9FE] text-[#5B21B6]", "F-质量评价": "bg-[#FCE7F3] text-[#9D174D]",
-  "G-招生就业": "bg-[#FFF7ED] text-[#C2410C]", "H-经费投入": "bg-[#ECFDF5] text-[#065F46]",
-  "I-数字化": "bg-[#EFF6FF] text-[#1D4ED8]", "J-国际化": "bg-[#F0FDF4] text-[#15803D]",
-  "K-乡村振兴": "bg-[#FFFBEB] text-[#A16207]", "L-职业本科": "bg-[#FAF5FF] text-[#7E22CE]",
-};
-
-const TYPE_LABELS: Record<string, string> = {
-  "A-治理体系": "治理体系", "B-产教融合": "产教融合", "C-人才培养": "人才培养",
-  "D-专业建设": "专业建设", "E-师资队伍": "师资队伍", "F-质量评价": "质量评价",
-  "G-招生就业": "招生就业", "H-经费投入": "经费投入", "I-数字化": "数字化",
-  "J-国际化": "国际化", "K-乡村振兴": "乡村振兴", "L-职业本科": "职业本科",
-};
+import { TYPE_CLASSES, TYPE_LABELS } from "@/lib/policy-types";
 
 interface SmartFilter {
   province: string | null;
