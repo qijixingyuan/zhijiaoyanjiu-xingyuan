@@ -52,6 +52,12 @@ export default function PolicyPanel({ filters }: PolicyPanelProps) {
       .catch(() => setLoading(false));
   }, [selProvince, selType, selYear, filters.keyword, page]);
 
+  // 标签编辑保存后同步列表与弹窗
+  const handlePolicyUpdated = (updated: PolicyItem) => {
+    setPolicies((prev) => prev.map((p) => (p.id === updated.id ? { ...p, ...updated } : p)));
+    setSelected(updated);
+  };
+
   // Smart search
   const handleSmartSearch = async () => {
     if (!nlQuery.trim()) return;
@@ -208,7 +214,7 @@ export default function PolicyPanel({ filters }: PolicyPanelProps) {
         </div>
       </div>
 
-      {selected && <PolicyModal policy={selected} onClose={() => setSelected(null)} />}
+      {selected && <PolicyModal policy={selected} onClose={() => setSelected(null)} onUpdated={handlePolicyUpdated} />}
     </div>
   );
 }
