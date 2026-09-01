@@ -1,12 +1,39 @@
-// 政策爬虫 v4 — 正文提取 + 频控 + 源码预检
+// 政策爬虫 v5 — 正文提取 + 频控 + 源码预检 + 源级增量（cooldown）
 // 运行: npx tsx scripts/crawl-policies-real.ts
+//   --force  忽略源冷却时间，全量爬取
+//   --once   每个源只爬第 1 页（快速核对源状态用）
 
+import * as fs from "fs";
+import * as path from "path";
 import { PrismaClient } from "@prisma/client";
 import { chromium } from "playwright";
 import { JSDOM } from "jsdom";
 import { Readability } from "@mozilla/readability";
 
 const prisma = new PrismaClient();
+
+// === 增量状态（源级上次爬取记录，支持"访客触发"场景防重复全量爬） ===
+const STATE_FILE = path.resolve(__dirname, "crawl-state.json");
+const COOLDOWN_HOURS = 6; // 源在 6 小时内爬过则跳过（--force 忽略）
+
+interface CrawlState {
+  [sourceName: string]: { lastCrawlAt: string; lastNewCount: number };
+}
+
+function loadState(): CrawlState {
+  try {
+    return JSON.parse(fs.readFileSync(STATE_FILE, "utf8"));
+  } catch {
+    return {};
+  }
+}
+
+function saveState(state: CrawlState) {
+  fs.writeFileSync(STATE_FILE, JSON.stringify(state, null, 2), "utf8");
+}
+
+const FORCE = process.argv.includes("--force");
+const ONCE = process.argv.includes("--once");
 
 // === 频控延迟（降低反爬拦截）===
 function randomDelay(min = 800, max = 3000): Promise<void> {
@@ -276,7 +303,8 @@ async function discoverSubCategories(page: any, source: CrawlSource): Promise<st
 /** 从第 1 页提取翻页链接 */
 async function discoverPageUrls(page: any, source: CrawlSource): Promise<string[]> {
   // Auto-detect pagination even without explicit config (max 5 pages default)
-  const maxPages = source.paginate?.maxPages || 5;
+  // --once 模式只爬第 1 页（快速核对源状态）
+  const maxPages = ONCE ? 1 : (source.paginate?.maxPages || 5);
 
   const urls: string[] = [source.url];
   try {
@@ -462,7 +490,8 @@ async function crawlSource(context: any, source: CrawlSource): Promise<{
 }
 
 async function main() {
-  console.log("🚀 政策爬虫 v5 (正文提取 + 频控 + 子栏目发现 + UA伪装 + Stealth)\n");
+  console.log(`🚀 政策爬虫 v5 (正文提取 + 频控 + 子栏目发现 + UA伪装 + Stealth + 增量${FORCE ? " | --force 全量" : ""}${ONCE ? " | --once 单页" : ""})\n`);
+  const crawlState = loadState();
   const browser = await chromium.launch({
     headless: true,
     args: [
@@ -491,8 +520,21 @@ async function main() {
   let totalSkipped = 0;
   let totalSummary = 0;
   let totalJunk = 0;
+  let totalCooldown = 0;
+  let sourceNewCount = 0;
 
   for (const source of SOURCES) {
+    // 增量: 冷却中的源跳过（除非 --force）
+    const prev = crawlState[source.name];
+    if (!FORCE && prev) {
+      const elapsed = Date.now() - new Date(prev.lastCrawlAt).getTime();
+      if (elapsed < COOLDOWN_HOURS * 3600 * 1000) {
+        totalCooldown++;
+        console.log(`\n⏭ 跳过(冷却中): ${source.name} — 上次 ${prev.lastCrawlAt}，新增 ${prev.lastNewCount} 条`);
+        continue;
+      }
+    }
+
     // 频控：源间随机延迟
     await randomDelay(500, 1500);
     console.log(`\n📂 ${source.name} (${source.province})`);
@@ -639,11 +681,23 @@ async function main() {
         console.log(`  ⚠ 插入失败: ${item.text.substring(0, 30)}...`);
       }
     }
+
+    // 记录源级增量状态（本次新增数；--once 单页核对不记录）
+    const srcNew = totalNew - sourceNewCount;
+    sourceNewCount = totalNew;
+    if (!ONCE) {
+      crawlState[source.name] = {
+        lastCrawlAt: new Date().toISOString(),
+        lastNewCount: srcNew,
+      };
+      console.log(`  📌 ${source.name} 本次新增 ${srcNew} 条，状态已记录`);
+    }
   }
 
   await context.close();
   await browser.close();
-  console.log(`\n✅ 新增: ${totalNew}, 跳过(重复): ${totalSkipped}, 跳过(垃圾): ${totalJunk}, 摘要: ${totalSummary}`);
+  if (!ONCE) saveState(crawlState);
+  console.log(`\n✅ 新增: ${totalNew}, 跳过(重复): ${totalSkipped}, 跳过(垃圾): ${totalJunk}, 跳过(冷却): ${totalCooldown}, 摘要: ${totalSummary}`);
   const total = await prisma.policy.count();
   console.log(`总政策数: ${total}`);
   await prisma.$disconnect();
