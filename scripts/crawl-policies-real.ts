@@ -59,12 +59,26 @@ function classifyPolicy(title: string, summary: string): string {
   return "M-其他";
 }
 
-// 关键词过滤 — 保留职教相关政策（2026-06-29 放宽）
+// 关键词过滤 — 保留职教相关政策（2026-06-29 放宽；2026-09-01 扩 EXCLUDE 防误抓）
 const MUST_MATCH = /职业|高职|专科|中职|技工|技师|技能|双高|产教融合|校企合作|学徒制|1\+X|实训|双师型|职教|技术技能|职业院校|中高职|职教高考|现场工程师|职业技能|工匠|大国工匠/;
-const EXCLUDE = /中小学|幼儿园|义务教育|留学生|学前教育|中考/;
+// 非职教内容排除（2026-09-01 清洗 53 条脏数据后的规则沉淀）
+const EXCLUDE = /中小学|幼儿园|义务教育|留学生|学前教育|中考|公开招聘|拟聘用|教师资格认定|艺术节|奖学金|诵写讲|普通话|校园足球|创新大赛|终身学习|研究生英语|国防教育|法治作品|教育科学规划|实验室安全检查|获奖名单|名单公示|优秀毕业生|招聘.*公告/;
 
 function isVocationalPolicy(title: string): boolean {
   return MUST_MATCH.test(title) && !EXCLUDE.test(title);
+}
+
+// 垃圾标题预判 — 分页导航/面包屑/筛选菜单/栏目名/超短文本（2026-09-01 清洗经验）
+// 这些文本不是政策标题，直接丢弃，不进入后续过滤和 LLM 分类
+function isJunkTitle(title: string): boolean {
+  const t = title.replace(/\s+/g, "").trim();
+  if (t.length < 6) return true;
+  if (/^(全部|首页|末页)(意见|办法|规划|方案|其他|通知|公告)?$/.test(t)) return true;
+  if (/^当前位置[:：]/.test(title)) return true;
+  if (/^(新闻中心|时政要闻|教育要闻|通知公告|教育动态|媒体聚焦)/.test(title)) return true;
+  if (/^(职业教育|高等教育|基础教育|成人教育)$/.test(t)) return true;
+  if (/共\s*\d+\s*条|上一页|下一页|转到第|^\d+$/.test(title)) return true;
+  return false;
 }
 
 // 正文职教关联验证 — 标题不匹配时，检查正文开头是否有强职教关联
@@ -476,6 +490,7 @@ async function main() {
   let totalNew = 0;
   let totalSkipped = 0;
   let totalSummary = 0;
+  let totalJunk = 0;
 
   for (const source of SOURCES) {
     // 频控：源间随机延迟
@@ -485,6 +500,13 @@ async function main() {
     console.log(`  筛选出 ${items.length} 条职教政策`);
 
     for (const item of items) {
+      // 垃圾标题过滤（分页/面包屑/菜单/栏目名）
+      if (isJunkTitle(item.text)) {
+        totalJunk++;
+        console.log(`  🗑 跳过(垃圾标题): ${item.text.substring(0, 40)}...`);
+        continue;
+      }
+
       // 去重 by URL
       const exists = await prisma.policy.findFirst({ where: { url: item.href } });
       if (exists) { totalSkipped++; continue; }
@@ -621,7 +643,7 @@ async function main() {
 
   await context.close();
   await browser.close();
-  console.log(`\n✅ 新增: ${totalNew}, 跳过(重复): ${totalSkipped}, 摘要: ${totalSummary}`);
+  console.log(`\n✅ 新增: ${totalNew}, 跳过(重复): ${totalSkipped}, 跳过(垃圾): ${totalJunk}, 摘要: ${totalSummary}`);
   const total = await prisma.policy.count();
   console.log(`总政策数: ${total}`);
   await prisma.$disconnect();
