@@ -15,8 +15,14 @@ export const TYPE_LABELS: Record<string, string> = {
   "J-国际化": "国际化", "K-乡村振兴": "乡村振兴", "L-职业本科": "职业本科",
 };
 
-/** 政策列表卡片 chip 用的 tailwind 类（键 "A-治理体系"） */
+/** 政策列表卡片 chip 用的 tailwind 类（键 "A-治理体系" 与单字母 "A" 均可查） */
 export const TYPE_CLASSES: Record<string, string> = {
+  "A": "bg-[#FEF3C7] text-[#92400E]", "B": "bg-[#FEE2E2] text-[#991B1B]",
+  "C": "bg-[#D1FAE5] text-[#065F46]", "D": "bg-[#DBEAFE] text-[#1D4ED8]",
+  "E": "bg-[#EDE9FE] text-[#5B21B6]", "F": "bg-[#FCE7F3] text-[#9D174D]",
+  "G": "bg-[#FFF7ED] text-[#C2410C]", "H": "bg-[#ECFDF5] text-[#065F46]",
+  "I": "bg-[#EFF6FF] text-[#1D4ED8]", "J": "bg-[#F0FDF4] text-[#15803D]",
+  "K": "bg-[#FFFBEB] text-[#A16207]", "L": "bg-[#FAF5FF] text-[#7E22CE]",
   "A-治理体系": "bg-[#FEF3C7] text-[#92400E]", "B-产教融合": "bg-[#FEE2E2] text-[#991B1B]",
   "C-人才培养": "bg-[#D1FAE5] text-[#065F46]", "D-专业建设": "bg-[#DBEAFE] text-[#1D4ED8]",
   "E-师资队伍": "bg-[#EDE9FE] text-[#5B21B6]", "F-质量评价": "bg-[#FCE7F3] text-[#9D174D]",

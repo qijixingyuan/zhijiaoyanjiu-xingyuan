@@ -58,6 +58,7 @@ model Policy {
   province    String
   publishDate DateTime
   type        String
+  tags        String   @default("")   // 多标签, 逗号分隔 A-L, 如 "A,B,K"; "" = 未标注
   department  String?   // 发文部门
   summary     String?
   docNumber   String?

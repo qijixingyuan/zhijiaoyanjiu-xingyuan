@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { PolicyItem } from "@/types";
 import PolicyModal from "./PolicyModal";
 import { PROVINCES } from "@/lib/china-geo";
-import { TYPE_CLASSES, TYPE_LABELS } from "@/lib/policy-types";
+import { TYPE_CLASSES, TYPE_LABELS, splitTags, normalizeTag, getTypeLabel } from "@/lib/policy-types";
 
 interface SmartFilter {
   province: string | null;
@@ -178,7 +178,16 @@ export default function PolicyPanel({ filters }: PolicyPanelProps) {
                     <div className="text-[13px] font-semibold text-[#1A2742] mb-1 leading-snug truncate">{policy.title}</div>
                     <div className="flex gap-1 items-center flex-wrap mb-1">
                       <span className="text-[11px] bg-[#E8EFF8] px-1.5 py-0.5 rounded-sm text-[#1A56A0] shrink-0">{policy.province}</span>
-                      {policy.type && <span className={`text-[11px] px-1.5 py-0.5 rounded-sm shrink-0 ${TYPE_CLASSES[policy.type] || "bg-gray-100 text-gray-600"}`}>{policy.type}</span>}
+                      {policy.type && (
+                        <span className={`text-[11px] px-1.5 py-0.5 rounded-sm shrink-0 ${TYPE_CLASSES[policy.type] || "bg-gray-100 text-gray-600"}`}>
+                          {getTypeLabel(policy.type)}
+                        </span>
+                      )}
+                      {splitTags(policy.tags).filter((t) => t !== normalizeTag(policy.type)).map((t) => (
+                        <span key={t} className={`text-[11px] px-1.5 py-0.5 rounded-sm shrink-0 ${TYPE_CLASSES[t] || "bg-gray-100 text-gray-600"}`}>
+                          {getTypeLabel(t)}
+                        </span>
+                      ))}
                     </div>
                     {policy.summary && <p className="text-[11px] text-[#5A6A85] leading-relaxed line-clamp-2">{policy.summary}</p>}
                   </div>

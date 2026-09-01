@@ -43,6 +43,7 @@ export async function GET(request: NextRequest) {
         province: true,
         publishDate: true,
         type: true,
+        tags: true,
         department: true,
         summary: true,
         docNumber: true,

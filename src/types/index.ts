@@ -55,6 +55,7 @@ export interface PolicyItem {
   province: string;
   publishDate: string;
   type: string;
+  tags?: string | null; // 多标签, 逗号分隔 A-L
   department: string | null;
   summary: string | null;
   docNumber: string | null;
