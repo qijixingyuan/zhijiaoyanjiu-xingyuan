@@ -2,7 +2,8 @@
 // 用法:
 //   npx tsx scripts/clean-junk-policies.ts --dry-run   # 只列清单不执行
 //   npx tsx scripts/clean-junk-policies.ts             # 执行（自动备份 dev.db）
-// 仅处理 type='M-其他' 的条目（已被 LLM 标注判定过），不影响已标注数据
+//   npx tsx scripts/clean-junk-policies.ts --full      # 全库扫描删除模式（含已标注数据，改标仍限 M-其他）
+// 默认仅处理 type='M-其他'；--full 时删除模式扫全库（防 E2E 误改导致脏数据逃逸）
 
 import * as fs from "fs";
 import * as path from "path";
@@ -51,13 +52,15 @@ function matchRule(title: string): { kind: "delete" | "reclassify"; name: string
 }
 
 const DRY_RUN = process.argv.includes("--dry-run");
+const FULL_SCAN = process.argv.includes("--full");
 
 async function main() {
+  const where = FULL_SCAN ? {} : { type: "M-其他" };
   const rows = await prisma.policy.findMany({
-    where: { type: "M-其他" },
-    select: { id: true, title: true },
+    where,
+    select: { id: true, title: true, type: true },
   });
-  console.log(`M-其他 共 ${rows.length} 条，逐条匹配规则...\n`);
+  console.log(`待扫描 ${rows.length} 条（${FULL_SCAN ? "全库" : "仅 M-其他"}），逐条匹配规则...\n`);
 
   const toDelete: { id: string; title: string; rule: string }[] = [];
   const toReclassify: { id: string; title: string; rule: string; type: string }[] = [];
@@ -67,13 +70,14 @@ async function main() {
     const clean = row.title.replace(/\s+/g, " ").trim();
     const rule = matchRule(clean);
     if (!rule) {
-      untouched.push(clean.slice(0, 50));
+      if (!FULL_SCAN) untouched.push(clean.slice(0, 50));
       continue;
     }
     if (rule.kind === "delete") {
       toDelete.push({ id: row.id, title: clean, rule: rule.name });
       console.log(`❌ 删 [${rule.name}] ${clean.slice(0, 55)}`);
-    } else {
+    } else if (!FULL_SCAN || row.type === "M-其他") {
+      // 改标规则仅在 M-其他 上生效（避免覆盖已标注数据）
       toReclassify.push({ id: row.id, title: clean, rule: rule.name, type: rule.type! });
       console.log(`🔀 改标 [${rule.name}] ${clean.slice(0, 55)}`);
     }

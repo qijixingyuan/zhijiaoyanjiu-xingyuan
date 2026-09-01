@@ -91,7 +91,7 @@ async function main() {
     }
   }
 
-  // 11. 政策标签编辑链路: 政策数据库 → 点卡片 → 编辑标签 → 加标签 → 保存
+  // 11. 政策标签编辑链路（只验证交互，点「取消」不写库，避免污染真实数据）
   await page.locator("button:has-text('政策数据库')").click();
   await page.waitForTimeout(2500);
   const card = page.locator("div.cursor-pointer").filter({ hasText: /职业技术学院|教育厅|通知|意见/ }).first();
@@ -104,10 +104,11 @@ async function main() {
     if (await addBtn.count() > 0) {
       await addBtn.click();
       await page.waitForTimeout(400);
-      await page.locator("button:has-text('保存')").click();
-      await page.waitForTimeout(1200);
+      // 点取消退出编辑，不写库
+      await page.locator("button:has-text('取消')").click();
+      await page.waitForTimeout(600);
       const body11 = await page.textContent("body");
-      console.log("11. 标签编辑保存: 编辑面板关闭:", !body11.includes("添加标签（最多 4 个）"), "| errors:", errors.length);
+      console.log("11. 标签编辑交互(取消不写库): 编辑面板关闭:", !body11.includes("添加标签（最多 4 个）"), "| errors:", errors.length);
     } else {
       console.log("11. 标签编辑: 未找到可添加的标签按钮（可能已满 4 个）");
     }
