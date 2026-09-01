@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { PolicyItem } from "@/types";
 import PolicyModal from "./PolicyModal";
+import PolicyFormModal from "./PolicyFormModal";
 import { PROVINCES } from "@/lib/china-geo";
 import { TYPE_CLASSES, TYPE_LABELS, splitTags, normalizeTag, getTypeLabel } from "@/lib/policy-types";
 
@@ -28,6 +29,8 @@ export default function PolicyPanel({ filters }: PolicyPanelProps) {
   const [selType, setSelType] = useState("");
   const [selYear, setSelYear] = useState("");
   const [selected, setSelected] = useState<PolicyItem | null>(null);
+  const [formMode, setFormMode] = useState<"create" | "edit" | null>(null);
+  const [editTarget, setEditTarget] = useState<PolicyItem | null>(null);
 
   // Smart search state
   const [nlQuery, setNlQuery] = useState("");
@@ -56,6 +59,29 @@ export default function PolicyPanel({ filters }: PolicyPanelProps) {
   const handlePolicyUpdated = (updated: PolicyItem) => {
     setPolicies((prev) => prev.map((p) => (p.id === updated.id ? { ...p, ...updated } : p)));
     setSelected(updated);
+  };
+
+  // 表单保存（新增/编辑）
+  const handleFormSaved = (saved: PolicyItem, isNew: boolean) => {
+    if (isNew) {
+      setPolicies((prev) => [saved, ...prev]);
+      setTotal((t) => t + 1);
+    } else {
+      setPolicies((prev) => prev.map((p) => (p.id === saved.id ? { ...p, ...saved } : p)));
+      setSelected(saved);
+    }
+  };
+
+  // 删除后从列表移除
+  const handlePolicyDeleted = (id: string) => {
+    setPolicies((prev) => prev.filter((p) => p.id !== id));
+    setTotal((t) => Math.max(0, t - 1));
+  };
+
+  // 打开编辑信息表单
+  const handleEditInfo = (policy: PolicyItem) => {
+    setEditTarget(policy);
+    setFormMode("edit");
   };
 
   // Smart search
@@ -159,6 +185,12 @@ export default function PolicyPanel({ filters }: PolicyPanelProps) {
           <button className="bg-[#F2F5FA] border border-[#D8E2F0] rounded px-3.5 py-1.5 text-xs text-[#5A6A85] cursor-pointer">
             ⬇ 批量下载
           </button>
+          <button
+            onClick={() => setFormMode("create")}
+            className="bg-[#1A56A0] text-white border-none rounded px-3.5 py-1.5 text-xs font-semibold cursor-pointer hover:bg-[#1D4ED8] transition-colors"
+          >
+            ＋ 新增政策
+          </button>
         </div>
       </div>
 
@@ -214,7 +246,23 @@ export default function PolicyPanel({ filters }: PolicyPanelProps) {
         </div>
       </div>
 
-      {selected && <PolicyModal policy={selected} onClose={() => setSelected(null)} onUpdated={handlePolicyUpdated} />}
+      {selected && (
+        <PolicyModal
+          policy={selected}
+          onClose={() => setSelected(null)}
+          onUpdated={handlePolicyUpdated}
+          onEdit={handleEditInfo}
+          onDeleted={handlePolicyDeleted}
+        />
+      )}
+      {formMode && (
+        <PolicyFormModal
+          mode={formMode}
+          policy={formMode === "edit" ? editTarget : null}
+          onClose={() => { setFormMode(null); setEditTarget(null); }}
+          onSaved={handleFormSaved}
+        />
+      )}
     </div>
   );
 }

@@ -8,9 +8,11 @@ interface PolicyModalProps {
   policy: PolicyItem | null;
   onClose: () => void;
   onUpdated?: (updated: PolicyItem) => void;
+  onEdit?: (policy: PolicyItem) => void;
+  onDeleted?: (id: string) => void;
 }
 
-export default function PolicyModal({ policy, onClose, onUpdated }: PolicyModalProps) {
+export default function PolicyModal({ policy, onClose, onUpdated, onEdit, onDeleted }: PolicyModalProps) {
   const [editing, setEditing] = useState(false);
   const [draftTags, setDraftTags] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
@@ -66,6 +68,19 @@ export default function PolicyModal({ policy, onClose, onUpdated }: PolicyModalP
     setSaving(false);
   };
 
+  const handleDelete = async () => {
+    if (!window.confirm(`确定删除该政策？\n\n${policy.title}\n\n此操作不可撤销。`)) return;
+    try {
+      const res = await fetch(`/api/policies/${policy.id}`, { method: "DELETE" });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      onDeleted?.(policy.id);
+      onClose();
+    } catch (err) {
+      console.error("PolicyModal delete:", err);
+      window.alert("删除失败，请重试");
+    }
+  };
+
   const currentTags = splitTags(policy.tags);
 
   return (
@@ -106,9 +121,25 @@ export default function PolicyModal({ policy, onClose, onUpdated }: PolicyModalP
             {!editing && (
               <button
                 onClick={handleStartEdit}
-                className="px-2.5 py-1 text-xs rounded-full border border-dashed border-[#3B82C4] text-[#1A56A0] hover:bg-blue-50 transition-colors"
+                className="px-2.5 py-1 text-xs rounded-full border border-dashed border-[#3B82C4] text-[#1A56A0] hover:bg-blue-50 transition-colors cursor-pointer"
               >
                 ✏️ 编辑标签
+              </button>
+            )}
+            {!editing && onEdit && (
+              <button
+                onClick={() => onEdit(policy)}
+                className="px-2.5 py-1 text-xs rounded-full border border-dashed border-[#10B981] text-[#065F46] hover:bg-green-50 transition-colors cursor-pointer"
+              >
+                📝 编辑信息
+              </button>
+            )}
+            {!editing && onDeleted && (
+              <button
+                onClick={handleDelete}
+                className="px-2.5 py-1 text-xs rounded-full border border-dashed border-red-300 text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
+              >
+                🗑 删除
               </button>
             )}
           </div>
