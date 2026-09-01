@@ -94,9 +94,9 @@ export default function PolicyFormModal({ mode, policy, onClose, onSaved }: Poli
             <div>
               <label className="text-[11px] font-bold text-[#5A6A85] block mb-1">省份 *</label>
               <select value={province} onChange={(e) => setProvince(e.target.value)} className={inputCls}>
-                <option value="">选择省份</option>
+                <option value="">中央/各省市自治区</option>
+                <option value="全国">国家（中央政策）</option>
                 {PROVINCES.map((p) => <option key={p} value={p}>{p}</option>)}
-                <option value="全国">全国</option>
               </select>
             </div>
             <div>

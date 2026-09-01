@@ -162,7 +162,8 @@ export default function PolicyPanel({ filters }: PolicyPanelProps) {
         <div className="flex gap-2 flex-wrap items-center">
           <select value={selProvince} onChange={(e) => { setSelProvince(e.target.value); setPage(1); }}
             className="border border-[#D8E2F0] rounded px-2.5 py-1.5 text-xs text-[#1A2742] bg-white font-sans">
-            <option value="">全部省份</option>
+            <option value="">中央/各省市自治区</option>
+            <option value="全国">国家（中央政策）</option>
             {PROVINCES.map((p) => <option key={p} value={p}>{p}</option>)}
           </select>
           <select value={selYear} onChange={(e) => { setSelYear(e.target.value); setPage(1); }}
