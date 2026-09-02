@@ -34,6 +34,8 @@ function saveState(state: CrawlState) {
 
 const FORCE = process.argv.includes("--force");
 const ONCE = process.argv.includes("--once");
+// 单源爬取: --only=湖南 只爬名称包含关键词的源
+const ONLY = (process.argv.find((a) => a.startsWith("--only=")) || "").split("=")[1] || "";
 
 // === 频控延迟（降低反爬拦截）===
 function randomDelay(min = 800, max = 3000): Promise<void> {
@@ -187,7 +189,7 @@ const SOURCES: CrawlSource[] = [
     url: "https://jyt.hunan.gov.cn/jyt/sjyt/xxgk/tzgg/index.html",
     waitFor: "a[href*='/tzgg/']",
     waitUntil: "domcontentloaded",
-    paginate: { type: "index_N", maxPages: 10 },
+    paginate: { type: "index_N", maxPages: 30 },  // 25+ 页历史公告，深挖补湖南数据
   },
   {
     name: "广东省教育厅", province: "广东省",
@@ -524,6 +526,9 @@ async function main() {
   let sourceNewCount = 0;
 
   for (const source of SOURCES) {
+    // 单源模式: 只爬名称含 --only 关键词的源
+    if (ONLY && !source.name.includes(ONLY)) continue;
+
     // 增量: 冷却中的源跳过（除非 --force）
     const prev = crawlState[source.name];
     if (!FORCE && prev) {
