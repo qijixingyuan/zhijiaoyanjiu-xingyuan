@@ -597,8 +597,8 @@ async function main() {
         if (urlDate) { publishDate = urlDate; dateFound = true; }
       }
 
-      // ── Date range filter: 2024-01-01 through today ──
-      const MIN_DATE = new Date(2024, 0, 1);
+      // ── Date range filter: 2021-01-01 through today（用户要求覆盖 2021-2026）──
+      const MIN_DATE = new Date(2021, 0, 1);
       const TODAY = new Date();
       if (publishDate < MIN_DATE || publishDate > TODAY) {
         const dateStr = publishDate.toISOString().split("T")[0];
