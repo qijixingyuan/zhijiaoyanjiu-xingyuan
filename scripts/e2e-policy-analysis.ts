@@ -71,7 +71,7 @@ async function main() {
   console.log("9. 院校统计回归: 行维度配置栏:", body9.includes("行维度"), "| 交叉统计:", body9.includes("交叉统计"), "| errors:", errors.length);
 
   // 10. 地图点击交互回归（ChinaMap 改动后必测）: 回地图 → 点省份 → 抽屉
-  await page.locator("button:has-text('院校分布地图')").click();
+  await page.locator("button:has-text('分布地图')").click();
   await page.waitForTimeout(2000);
   await page.waitForSelector("canvas", { timeout: 15000 });
   const canvas = page.locator("canvas").first();
