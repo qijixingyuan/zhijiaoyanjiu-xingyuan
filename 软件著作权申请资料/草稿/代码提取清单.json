@@ -1,0 +1,484 @@
+{
+  "software_name": "高职院校政策研究平台",
+  "version": "V1.0",
+  "project_root": "D:\\AI Projects\\高职院校地图系统",
+  "file_count": 46,
+  "material_line_count": 5013,
+  "source_line_count": 5495,
+  "selected_source_line_count": 4967,
+  "lines_per_page": 50,
+  "total_pages": 101,
+  "target_pages": 60,
+  "available_candidate_line_count": 8314,
+  "available_candidate_pages": 167,
+  "supplement_status": "候选源码可达到前30页/后30页要求",
+  "mode": "front30_back30",
+  "selection_file": "软件著作权申请资料\\草稿\\代码文件选择.json",
+  "outputs": [
+    "代码-前30页.md",
+    "代码-后30页.md"
+  ],
+  "files": [
+    {
+      "path": "src/app/layout.tsx",
+      "source_line_count": 21,
+      "blank_line_count": 2,
+      "selected_line_start": 1,
+      "selected_line_end": 21,
+      "selected_line_count": 19,
+      "material_line_start": 1,
+      "material_line_end": 20
+    },
+    {
+      "path": "src/app/page.tsx",
+      "source_line_count": 90,
+      "blank_line_count": 11,
+      "selected_line_start": 1,
+      "selected_line_end": 90,
+      "selected_line_count": 79,
+      "material_line_start": 21,
+      "material_line_end": 100
+    },
+    {
+      "path": "src/app/api/colleges/[id]/route.ts",
+      "source_line_count": 25,
+      "blank_line_count": 4,
+      "selected_line_start": 1,
+      "selected_line_end": 25,
+      "selected_line_count": 21,
+      "material_line_start": 101,
+      "material_line_end": 122
+    },
+    {
+      "path": "src/app/api/colleges/geo/route.ts",
+      "source_line_count": 104,
+      "blank_line_count": 14,
+      "selected_line_start": 1,
+      "selected_line_end": 104,
+      "selected_line_count": 90,
+      "material_line_start": 123,
+      "material_line_end": 213
+    },
+    {
+      "path": "src/app/api/colleges/route.ts",
+      "source_line_count": 70,
+      "blank_line_count": 6,
+      "selected_line_start": 1,
+      "selected_line_end": 70,
+      "selected_line_count": 64,
+      "material_line_start": 214,
+      "material_line_end": 278
+    },
+    {
+      "path": "src/app/api/crawl-progress/route.ts",
+      "source_line_count": 18,
+      "blank_line_count": 2,
+      "selected_line_start": 1,
+      "selected_line_end": 18,
+      "selected_line_count": 16,
+      "material_line_start": 279,
+      "material_line_end": 295
+    },
+    {
+      "path": "src/app/api/policies/[id]/route.ts",
+      "source_line_count": 89,
+      "blank_line_count": 9,
+      "selected_line_start": 1,
+      "selected_line_end": 89,
+      "selected_line_count": 80,
+      "material_line_start": 296,
+      "material_line_end": 376
+    },
+    {
+      "path": "src/app/api/policies/analysis/route.ts",
+      "source_line_count": 29,
+      "blank_line_count": 4,
+      "selected_line_start": 1,
+      "selected_line_end": 29,
+      "selected_line_count": 25,
+      "material_line_start": 377,
+      "material_line_end": 402
+    },
+    {
+      "path": "src/app/api/policies/crawl-status/route.ts",
+      "source_line_count": 102,
+      "blank_line_count": 12,
+      "selected_line_start": 1,
+      "selected_line_end": 102,
+      "selected_line_count": 90,
+      "material_line_start": 403,
+      "material_line_end": 493
+    },
+    {
+      "path": "src/app/api/policies/route.ts",
+      "source_line_count": 132,
+      "blank_line_count": 13,
+      "selected_line_start": 1,
+      "selected_line_end": 132,
+      "selected_line_count": 119,
+      "material_line_start": 494,
+      "material_line_end": 613
+    },
+    {
+      "path": "src/app/api/policies/search/route.ts",
+      "source_line_count": 137,
+      "blank_line_count": 21,
+      "selected_line_start": 1,
+      "selected_line_end": 137,
+      "selected_line_count": 116,
+      "material_line_start": 614,
+      "material_line_end": 730
+    },
+    {
+      "path": "src/app/api/stats/route.ts",
+      "source_line_count": 73,
+      "blank_line_count": 7,
+      "selected_line_start": 1,
+      "selected_line_end": 73,
+      "selected_line_count": 66,
+      "material_line_start": 731,
+      "material_line_end": 797
+    },
+    {
+      "path": "src/components/college/CollegeDetailContent.tsx",
+      "source_line_count": 198,
+      "blank_line_count": 9,
+      "selected_line_start": 1,
+      "selected_line_end": 198,
+      "selected_line_count": 189,
+      "material_line_start": 798,
+      "material_line_end": 987
+    },
+    {
+      "path": "src/components/college/CollegeDetailModal.tsx",
+      "source_line_count": 71,
+      "blank_line_count": 9,
+      "selected_line_start": 1,
+      "selected_line_end": 71,
+      "selected_line_count": 62,
+      "material_line_start": 988,
+      "material_line_end": 1050
+    },
+    {
+      "path": "src/components/college/CollegeModal.tsx",
+      "source_line_count": 200,
+      "blank_line_count": 16,
+      "selected_line_start": 1,
+      "selected_line_end": 200,
+      "selected_line_count": 184,
+      "material_line_start": 1051,
+      "material_line_end": 1235
+    },
+    {
+      "path": "src/components/college/CollegePanel.tsx",
+      "source_line_count": 177,
+      "blank_line_count": 17,
+      "selected_line_start": 1,
+      "selected_line_end": 177,
+      "selected_line_count": 160,
+      "material_line_start": 1236,
+      "material_line_end": 1396
+    },
+    {
+      "path": "src/components/layout/AppNav.tsx",
+      "source_line_count": 55,
+      "blank_line_count": 5,
+      "selected_line_start": 1,
+      "selected_line_end": 55,
+      "selected_line_count": 50,
+      "material_line_start": 1397,
+      "material_line_end": 1447
+    },
+    {
+      "path": "src/components/layout/CrawlProgress.tsx",
+      "source_line_count": 125,
+      "blank_line_count": 16,
+      "selected_line_start": 1,
+      "selected_line_end": 125,
+      "selected_line_count": 109,
+      "material_line_start": 1448,
+      "material_line_end": 1557
+    },
+    {
+      "path": "src/components/layout/FilterPanel.tsx",
+      "source_line_count": 159,
+      "blank_line_count": 11,
+      "selected_line_start": 1,
+      "selected_line_end": 159,
+      "selected_line_count": 148,
+      "material_line_start": 1558,
+      "material_line_end": 1706
+    },
+    {
+      "path": "src/components/layout/PolicyCrawlBadge.tsx",
+      "source_line_count": 192,
+      "blank_line_count": 18,
+      "selected_line_start": 1,
+      "selected_line_end": 192,
+      "selected_line_count": 174,
+      "material_line_start": 1707,
+      "material_line_end": 1881
+    },
+    {
+      "path": "src/components/layout/Sidebar.tsx",
+      "source_line_count": 169,
+      "blank_line_count": 13,
+      "selected_line_start": 1,
+      "selected_line_end": 169,
+      "selected_line_count": 156,
+      "material_line_start": 1882,
+      "material_line_end": 2038
+    },
+    {
+      "path": "src/components/map/ChinaMap.tsx",
+      "source_line_count": 132,
+      "blank_line_count": 10,
+      "selected_line_start": 1,
+      "selected_line_end": 132,
+      "selected_line_count": 122,
+      "material_line_start": 2039,
+      "material_line_end": 2161
+    },
+    {
+      "path": "src/components/map/MapPanel.tsx",
+      "source_line_count": 211,
+      "blank_line_count": 22,
+      "selected_line_start": 1,
+      "selected_line_end": 211,
+      "selected_line_count": 189,
+      "material_line_start": 2162,
+      "material_line_end": 2351
+    },
+    {
+      "path": "src/components/map/MapStatsBanner.tsx",
+      "source_line_count": 27,
+      "blank_line_count": 1,
+      "selected_line_start": 1,
+      "selected_line_end": 27,
+      "selected_line_count": 26,
+      "material_line_start": 2352,
+      "material_line_end": 2378
+    },
+    {
+      "path": "src/components/map/ProvinceDrawer.tsx",
+      "source_line_count": 130,
+      "blank_line_count": 13,
+      "selected_line_start": 1,
+      "selected_line_end": 130,
+      "selected_line_count": 117,
+      "material_line_start": 2379,
+      "material_line_end": 2496
+    },
+    {
+      "path": "src/components/policy/PolicyFormModal.tsx",
+      "source_line_count": 161,
+      "blank_line_count": 17,
+      "selected_line_start": 1,
+      "selected_line_end": 161,
+      "selected_line_count": 144,
+      "material_line_start": 2497,
+      "material_line_end": 2641
+    },
+    {
+      "path": "src/components/policy/PolicyModal.tsx",
+      "source_line_count": 260,
+      "blank_line_count": 16,
+      "selected_line_start": 1,
+      "selected_line_end": 260,
+      "selected_line_count": 244,
+      "material_line_start": 2642,
+      "material_line_end": 2886
+    },
+    {
+      "path": "src/components/policy/PolicyPanel.tsx",
+      "source_line_count": 270,
+      "blank_line_count": 19,
+      "selected_line_start": 1,
+      "selected_line_end": 270,
+      "selected_line_count": 251,
+      "material_line_start": 2887,
+      "material_line_end": 3138
+    },
+    {
+      "path": "src/components/policy/PolicyTable.tsx",
+      "source_line_count": 124,
+      "blank_line_count": 9,
+      "selected_line_start": 1,
+      "selected_line_end": 124,
+      "selected_line_count": 115,
+      "material_line_start": 3139,
+      "material_line_end": 3254
+    },
+    {
+      "path": "src/components/stats/analysis/CalendarHeatmap.tsx",
+      "source_line_count": 160,
+      "blank_line_count": 12,
+      "selected_line_start": 1,
+      "selected_line_end": 160,
+      "selected_line_count": 148,
+      "material_line_start": 3255,
+      "material_line_end": 3403
+    },
+    {
+      "path": "src/components/stats/analysis/CooccurrenceGraph.tsx",
+      "source_line_count": 141,
+      "blank_line_count": 7,
+      "selected_line_start": 1,
+      "selected_line_end": 141,
+      "selected_line_count": 134,
+      "material_line_start": 3404,
+      "material_line_end": 3538
+    },
+    {
+      "path": "src/components/stats/analysis/DepartmentAnalysis.tsx",
+      "source_line_count": 91,
+      "blank_line_count": 9,
+      "selected_line_start": 1,
+      "selected_line_end": 91,
+      "selected_line_count": 82,
+      "material_line_start": 3539,
+      "material_line_end": 3621
+    },
+    {
+      "path": "src/components/stats/analysis/PolicyChinaHeatmap.tsx",
+      "source_line_count": 79,
+      "blank_line_count": 8,
+      "selected_line_start": 1,
+      "selected_line_end": 79,
+      "selected_line_count": 71,
+      "material_line_start": 3622,
+      "material_line_end": 3693
+    },
+    {
+      "path": "src/components/stats/analysis/ProvinceActivity.tsx",
+      "source_line_count": 65,
+      "blank_line_count": 7,
+      "selected_line_start": 1,
+      "selected_line_end": 65,
+      "selected_line_count": 58,
+      "material_line_start": 3694,
+      "material_line_end": 3752
+    },
+    {
+      "path": "src/components/stats/analysis/TrendChart.tsx",
+      "source_line_count": 74,
+      "blank_line_count": 6,
+      "selected_line_start": 1,
+      "selected_line_end": 74,
+      "selected_line_count": 68,
+      "material_line_start": 3753,
+      "material_line_end": 3821
+    },
+    {
+      "path": "src/components/stats/CrossFilter.tsx",
+      "source_line_count": 78,
+      "blank_line_count": 4,
+      "selected_line_start": 1,
+      "selected_line_end": 78,
+      "selected_line_count": 74,
+      "material_line_start": 3822,
+      "material_line_end": 3896
+    },
+    {
+      "path": "src/components/stats/CrossTable.tsx",
+      "source_line_count": 59,
+      "blank_line_count": 4,
+      "selected_line_start": 1,
+      "selected_line_end": 59,
+      "selected_line_count": 55,
+      "material_line_start": 3897,
+      "material_line_end": 3952
+    },
+    {
+      "path": "src/components/stats/PolicyAnalysis.tsx",
+      "source_line_count": 108,
+      "blank_line_count": 9,
+      "selected_line_start": 1,
+      "selected_line_end": 108,
+      "selected_line_count": 99,
+      "material_line_start": 3953,
+      "material_line_end": 4052
+    },
+    {
+      "path": "src/components/stats/StatsCharts.tsx",
+      "source_line_count": 143,
+      "blank_line_count": 12,
+      "selected_line_start": 1,
+      "selected_line_end": 143,
+      "selected_line_count": 131,
+      "material_line_start": 4053,
+      "material_line_end": 4184
+    },
+    {
+      "path": "src/components/stats/StatsPanel.tsx",
+      "source_line_count": 174,
+      "blank_line_count": 14,
+      "selected_line_start": 1,
+      "selected_line_end": 174,
+      "selected_line_count": 160,
+      "material_line_start": 4185,
+      "material_line_end": 4345
+    },
+    {
+      "path": "src/lib/china-geo.ts",
+      "source_line_count": 289,
+      "blank_line_count": 46,
+      "selected_line_start": 1,
+      "selected_line_end": 289,
+      "selected_line_count": 243,
+      "material_line_start": 4346,
+      "material_line_end": 4589
+    },
+    {
+      "path": "src/lib/llm.ts",
+      "source_line_count": 67,
+      "blank_line_count": 12,
+      "selected_line_start": 1,
+      "selected_line_end": 67,
+      "selected_line_count": 55,
+      "material_line_start": 4590,
+      "material_line_end": 4645
+    },
+    {
+      "path": "src/lib/policy-analysis.ts",
+      "source_line_count": 292,
+      "blank_line_count": 34,
+      "selected_line_start": 1,
+      "selected_line_end": 292,
+      "selected_line_count": 258,
+      "material_line_start": 4646,
+      "material_line_end": 4904
+    },
+    {
+      "path": "src/lib/policy-types.ts",
+      "source_line_count": 63,
+      "blank_line_count": 7,
+      "selected_line_start": 1,
+      "selected_line_end": 63,
+      "selected_line_count": 56,
+      "material_line_start": 4905,
+      "material_line_end": 4961
+    },
+    {
+      "path": "src/lib/prisma.ts",
+      "source_line_count": 10,
+      "blank_line_count": 3,
+      "selected_line_start": 1,
+      "selected_line_end": 10,
+      "selected_line_count": 7,
+      "material_line_start": 4962,
+      "material_line_end": 4969
+    },
+    {
+      "path": "src/lib/use-china-geo.ts",
+      "source_line_count": 51,
+      "blank_line_count": 8,
+      "selected_line_start": 1,
+      "selected_line_end": 51,
+      "selected_line_count": 43,
+      "material_line_start": 4970,
+      "material_line_end": 5013
+    }
+  ],
+  "safe_software_filename": "高职院校政策研究平台"
+}

@@ -1,0 +1,732 @@
+{
+  "project_root": "D:\\AI Projects\\高职院校地图系统",
+  "selection_required": true,
+  "model_selection_required": true,
+  "confirmation_required": true,
+  "user_confirmed": true,
+  "target_pages": 60,
+  "lines_per_page": 50,
+  "target_lines": 3000,
+  "estimated_selected_lines": 0,
+  "estimated_selected_pages": 0,
+  "estimated_all_candidate_lines": 8314,
+  "estimated_all_candidate_pages": 167,
+  "supplement_rule": "模型优先选择能体现软件核心功能和真实运行逻辑的源码；不足60页时再从其他相关源码中补充；候选源码仍不足时才生成全部代码材料。",
+  "confirmation_stage": "code-selection",
+  "next_action": "请由模型填写 草稿/代码文件选择.json 的抽取选择和选择理由，再让用户确认；确认后运行 confirm_stage.py --stage code-selection。",
+  "instructions": "The script only inventories source files. The model must choose selected/model_reason before user confirmation. Selected files are extracted in full with blank-only lines removed.",
+  "files": [
+    {
+      "path": "src/app/layout.tsx",
+      "selected": true,
+      "line_count": 21,
+      "material_line_count": 19,
+      "priority": 0,
+      "selection_tier": "frontend",
+      "evidence": "入口文件证据",
+      "model_reason": "应用根布局入口，展示全局结构"
+    },
+    {
+      "path": "src/app/page.tsx",
+      "selected": true,
+      "line_count": 90,
+      "material_line_count": 79,
+      "priority": 0,
+      "selection_tier": "frontend",
+      "evidence": "入口文件证据",
+      "model_reason": "主页面入口，组织四大功能模块的切换逻辑"
+    },
+    {
+      "path": "src/app/api/colleges/[id]/route.ts",
+      "selected": true,
+      "line_count": 25,
+      "material_line_count": 21,
+      "priority": 20,
+      "selection_tier": "frontend",
+      "evidence": "页面文件证据",
+      "model_reason": "院校详情接口"
+    },
+    {
+      "path": "src/app/api/colleges/geo/route.ts",
+      "selected": true,
+      "line_count": 104,
+      "material_line_count": 90,
+      "priority": 20,
+      "selection_tier": "frontend",
+      "evidence": "页面文件证据",
+      "model_reason": "院校地理分布数据接口"
+    },
+    {
+      "path": "src/app/api/colleges/route.ts",
+      "selected": true,
+      "line_count": 70,
+      "material_line_count": 64,
+      "priority": 20,
+      "selection_tier": "frontend",
+      "evidence": "页面文件证据",
+      "model_reason": "院校列表查询接口"
+    },
+    {
+      "path": "src/app/api/crawl-progress/route.ts",
+      "selected": true,
+      "line_count": 18,
+      "material_line_count": 16,
+      "priority": 20,
+      "selection_tier": "frontend",
+      "evidence": "页面文件证据",
+      "model_reason": "爬虫进度接口"
+    },
+    {
+      "path": "src/app/api/policies/[id]/route.ts",
+      "selected": true,
+      "line_count": 89,
+      "material_line_count": 80,
+      "priority": 20,
+      "selection_tier": "frontend",
+      "evidence": "页面文件证据",
+      "model_reason": "政策编辑与删除接口"
+    },
+    {
+      "path": "src/app/api/policies/analysis/route.ts",
+      "selected": true,
+      "line_count": 29,
+      "material_line_count": 25,
+      "priority": 20,
+      "selection_tier": "frontend",
+      "evidence": "页面文件证据",
+      "model_reason": "政策五维分析聚合接口"
+    },
+    {
+      "path": "src/app/api/policies/crawl-status/route.ts",
+      "selected": true,
+      "line_count": 102,
+      "material_line_count": 90,
+      "priority": 20,
+      "selection_tier": "frontend",
+      "evidence": "页面文件证据",
+      "model_reason": "政策爬取状态接口"
+    },
+    {
+      "path": "src/app/api/policies/route.ts",
+      "selected": true,
+      "line_count": 132,
+      "material_line_count": 119,
+      "priority": 20,
+      "selection_tier": "frontend",
+      "evidence": "页面文件证据",
+      "model_reason": "政策查询与新增接口"
+    },
+    {
+      "path": "src/app/api/policies/search/route.ts",
+      "selected": true,
+      "line_count": 137,
+      "material_line_count": 116,
+      "priority": 20,
+      "selection_tier": "frontend",
+      "evidence": "页面文件证据",
+      "model_reason": "自然语言智能搜索接口"
+    },
+    {
+      "path": "src/app/api/stats/route.ts",
+      "selected": true,
+      "line_count": 73,
+      "material_line_count": 66,
+      "priority": 20,
+      "selection_tier": "frontend",
+      "evidence": "页面文件证据",
+      "model_reason": "院校统计交叉报表接口"
+    },
+    {
+      "path": "src/app/college/[id]/page.tsx",
+      "selected": false,
+      "line_count": 63,
+      "material_line_count": 55,
+      "priority": 20,
+      "selection_tier": "frontend",
+      "evidence": "页面文件证据",
+      "model_reason": "非核心展示路径，不抽取"
+    },
+    {
+      "path": "src/app/policy/page.tsx",
+      "selected": false,
+      "line_count": 47,
+      "material_line_count": 44,
+      "priority": 20,
+      "selection_tier": "frontend",
+      "evidence": "页面文件证据",
+      "model_reason": "非核心展示路径，不抽取"
+    },
+    {
+      "path": "src/app/stats/page.tsx",
+      "selected": false,
+      "line_count": 51,
+      "material_line_count": 46,
+      "priority": 20,
+      "selection_tier": "frontend",
+      "evidence": "页面文件证据",
+      "model_reason": "非核心展示路径，不抽取"
+    },
+    {
+      "path": "src/components/college/CollegeDetailContent.tsx",
+      "selected": true,
+      "line_count": 198,
+      "material_line_count": 189,
+      "priority": 50,
+      "selection_tier": "frontend",
+      "evidence": "页面组成文件证据",
+      "model_reason": "院校详情内容（荣誉/舆情/官网标签页）"
+    },
+    {
+      "path": "src/components/college/CollegeDetailModal.tsx",
+      "selected": true,
+      "line_count": 71,
+      "material_line_count": 62,
+      "priority": 50,
+      "selection_tier": "frontend",
+      "evidence": "页面组成文件证据",
+      "model_reason": "院校详情弹窗"
+    },
+    {
+      "path": "src/components/college/CollegeModal.tsx",
+      "selected": true,
+      "line_count": 200,
+      "material_line_count": 184,
+      "priority": 50,
+      "selection_tier": "frontend",
+      "evidence": "页面组成文件证据",
+      "model_reason": "院校信息弹窗"
+    },
+    {
+      "path": "src/components/college/CollegePanel.tsx",
+      "selected": true,
+      "line_count": 177,
+      "material_line_count": 160,
+      "priority": 50,
+      "selection_tier": "frontend",
+      "evidence": "页面组成文件证据",
+      "model_reason": "院校检索面板，搜索筛选逻辑"
+    },
+    {
+      "path": "src/components/layout/AppNav.tsx",
+      "selected": true,
+      "line_count": 55,
+      "material_line_count": 50,
+      "priority": 50,
+      "selection_tier": "frontend",
+      "evidence": "页面组成文件证据",
+      "model_reason": "顶部导航栏，四大功能模块入口"
+    },
+    {
+      "path": "src/components/layout/CrawlProgress.tsx",
+      "selected": true,
+      "line_count": 125,
+      "material_line_count": 109,
+      "priority": 50,
+      "selection_tier": "frontend",
+      "evidence": "页面组成文件证据",
+      "model_reason": "爬虫进度展示组件"
+    },
+    {
+      "path": "src/components/layout/FilterPanel.tsx",
+      "selected": true,
+      "line_count": 159,
+      "material_line_count": 148,
+      "priority": 50,
+      "selection_tier": "frontend",
+      "evidence": "页面组成文件证据",
+      "model_reason": "筛选面板，办学性质/主管部门/荣誉筛选"
+    },
+    {
+      "path": "src/components/layout/PolicyCrawlBadge.tsx",
+      "selected": true,
+      "line_count": 192,
+      "material_line_count": 174,
+      "priority": 50,
+      "selection_tier": "frontend",
+      "evidence": "页面组成文件证据",
+      "model_reason": "政策爬取状态徽标组件"
+    },
+    {
+      "path": "src/components/layout/Sidebar.tsx",
+      "selected": true,
+      "line_count": 169,
+      "material_line_count": 156,
+      "priority": 50,
+      "selection_tier": "frontend",
+      "evidence": "页面组成文件证据",
+      "model_reason": "地图页筛选侧栏，体现筛选交互"
+    },
+    {
+      "path": "src/components/map/ChinaMap.tsx",
+      "selected": true,
+      "line_count": 132,
+      "material_line_count": 122,
+      "priority": 50,
+      "selection_tier": "frontend",
+      "evidence": "页面组成文件证据",
+      "model_reason": "中国地图核心组件，院校分布热力渲染"
+    },
+    {
+      "path": "src/components/map/MapPanel.tsx",
+      "selected": true,
+      "line_count": 211,
+      "material_line_count": 189,
+      "priority": 50,
+      "selection_tier": "frontend",
+      "evidence": "页面组成文件证据",
+      "model_reason": "地图面板，省份点击与抽屉联动"
+    },
+    {
+      "path": "src/components/map/MapStatsBanner.tsx",
+      "selected": true,
+      "line_count": 27,
+      "material_line_count": 26,
+      "priority": 50,
+      "selection_tier": "frontend",
+      "evidence": "页面组成文件证据",
+      "model_reason": "地图统计横幅"
+    },
+    {
+      "path": "src/components/map/ProvinceDrawer.tsx",
+      "selected": true,
+      "line_count": 130,
+      "material_line_count": 117,
+      "priority": 50,
+      "selection_tier": "frontend",
+      "evidence": "页面组成文件证据",
+      "model_reason": "省份院校列表抽屉"
+    },
+    {
+      "path": "src/components/policy/PolicyFormModal.tsx",
+      "selected": true,
+      "line_count": 161,
+      "material_line_count": 144,
+      "priority": 50,
+      "selection_tier": "frontend",
+      "evidence": "页面组成文件证据",
+      "model_reason": "政策新增/编辑表单"
+    },
+    {
+      "path": "src/components/policy/PolicyModal.tsx",
+      "selected": true,
+      "line_count": 260,
+      "material_line_count": 244,
+      "priority": 50,
+      "selection_tier": "frontend",
+      "evidence": "页面组成文件证据",
+      "model_reason": "政策详情弹窗，标签编辑与删除"
+    },
+    {
+      "path": "src/components/policy/PolicyPanel.tsx",
+      "selected": true,
+      "line_count": 270,
+      "material_line_count": 251,
+      "priority": 50,
+      "selection_tier": "frontend",
+      "evidence": "页面组成文件证据",
+      "model_reason": "政策数据库主面板，筛选与智能搜索"
+    },
+    {
+      "path": "src/components/policy/PolicyTable.tsx",
+      "selected": true,
+      "line_count": 124,
+      "material_line_count": 115,
+      "priority": 50,
+      "selection_tier": "frontend",
+      "evidence": "页面组成文件证据",
+      "model_reason": "政策列表表格"
+    },
+    {
+      "path": "src/components/stats/analysis/CalendarHeatmap.tsx",
+      "selected": true,
+      "line_count": 160,
+      "material_line_count": 148,
+      "priority": 50,
+      "selection_tier": "frontend",
+      "evidence": "页面组成文件证据",
+      "model_reason": "政策密集度日历热力图"
+    },
+    {
+      "path": "src/components/stats/analysis/CooccurrenceGraph.tsx",
+      "selected": true,
+      "line_count": 141,
+      "material_line_count": 134,
+      "priority": 50,
+      "selection_tier": "frontend",
+      "evidence": "页面组成文件证据",
+      "model_reason": "主题共现矩阵与网络图"
+    },
+    {
+      "path": "src/components/stats/analysis/DepartmentAnalysis.tsx",
+      "selected": true,
+      "line_count": 91,
+      "material_line_count": 82,
+      "priority": 50,
+      "selection_tier": "frontend",
+      "evidence": "页面组成文件证据",
+      "model_reason": "发文主体分析与联合发文检测"
+    },
+    {
+      "path": "src/components/stats/analysis/PolicyChinaHeatmap.tsx",
+      "selected": true,
+      "line_count": 79,
+      "material_line_count": 71,
+      "priority": 50,
+      "selection_tier": "frontend",
+      "evidence": "页面组成文件证据",
+      "model_reason": "政策热力地图"
+    },
+    {
+      "path": "src/components/stats/analysis/ProvinceActivity.tsx",
+      "selected": true,
+      "line_count": 65,
+      "material_line_count": 58,
+      "priority": 50,
+      "selection_tier": "frontend",
+      "evidence": "页面组成文件证据",
+      "model_reason": "省份政策活跃度分析"
+    },
+    {
+      "path": "src/components/stats/analysis/TrendChart.tsx",
+      "selected": true,
+      "line_count": 74,
+      "material_line_count": 68,
+      "priority": 50,
+      "selection_tier": "frontend",
+      "evidence": "页面组成文件证据",
+      "model_reason": "政策演进趋势堆叠面积图"
+    },
+    {
+      "path": "src/components/stats/CrossFilter.tsx",
+      "selected": true,
+      "line_count": 78,
+      "material_line_count": 74,
+      "priority": 50,
+      "selection_tier": "frontend",
+      "evidence": "页面组成文件证据",
+      "model_reason": "交叉筛选组件"
+    },
+    {
+      "path": "src/components/stats/CrossTable.tsx",
+      "selected": true,
+      "line_count": 59,
+      "material_line_count": 55,
+      "priority": 50,
+      "selection_tier": "frontend",
+      "evidence": "页面组成文件证据",
+      "model_reason": "交叉统计表组件"
+    },
+    {
+      "path": "src/components/stats/PolicyAnalysis.tsx",
+      "selected": true,
+      "line_count": 108,
+      "material_line_count": 99,
+      "priority": 50,
+      "selection_tier": "frontend",
+      "evidence": "页面组成文件证据",
+      "model_reason": "政策分析容器，五维度切换"
+    },
+    {
+      "path": "src/components/stats/StatsCharts.tsx",
+      "selected": true,
+      "line_count": 143,
+      "material_line_count": 131,
+      "priority": 50,
+      "selection_tier": "frontend",
+      "evidence": "页面组成文件证据",
+      "model_reason": "院校统计图表组件"
+    },
+    {
+      "path": "src/components/stats/StatsPanel.tsx",
+      "selected": true,
+      "line_count": 174,
+      "material_line_count": 160,
+      "priority": 50,
+      "selection_tier": "frontend",
+      "evidence": "页面组成文件证据",
+      "model_reason": "数据分析主面板，院校统计/政策分析子标签"
+    },
+    {
+      "path": "src/lib/china-geo.ts",
+      "selected": true,
+      "line_count": 289,
+      "material_line_count": 243,
+      "priority": 60,
+      "selection_tier": "frontend",
+      "evidence": "通用能力文件证据",
+      "model_reason": "省份城市映射数据"
+    },
+    {
+      "path": "src/lib/llm.ts",
+      "selected": true,
+      "line_count": 67,
+      "material_line_count": 55,
+      "priority": 60,
+      "selection_tier": "frontend",
+      "evidence": "通用能力文件证据",
+      "model_reason": "大模型接口客户端（智能搜索/自动标注）"
+    },
+    {
+      "path": "src/lib/policy-analysis.ts",
+      "selected": true,
+      "line_count": 292,
+      "material_line_count": 258,
+      "priority": 60,
+      "selection_tier": "frontend",
+      "evidence": "通用能力文件证据",
+      "model_reason": "五维度政策分析聚合算法"
+    },
+    {
+      "path": "src/lib/policy-types.ts",
+      "selected": true,
+      "line_count": 63,
+      "material_line_count": 56,
+      "priority": 60,
+      "selection_tier": "frontend",
+      "evidence": "通用能力文件证据",
+      "model_reason": "12类政策主题标签体系与工具函数"
+    },
+    {
+      "path": "src/lib/prisma.ts",
+      "selected": true,
+      "line_count": 10,
+      "material_line_count": 7,
+      "priority": 60,
+      "selection_tier": "frontend",
+      "evidence": "通用能力文件证据",
+      "model_reason": "数据库连接"
+    },
+    {
+      "path": "src/lib/use-china-geo.ts",
+      "selected": true,
+      "line_count": 51,
+      "material_line_count": 43,
+      "priority": 60,
+      "selection_tier": "frontend",
+      "evidence": "通用能力文件证据",
+      "model_reason": "地图数据加载共享Hook"
+    },
+    {
+      "path": "next-env.d.ts",
+      "selected": false,
+      "line_count": 5,
+      "material_line_count": 4,
+      "priority": 80,
+      "selection_tier": "frontend",
+      "evidence": "普通源码文件",
+      "model_reason": "非核心展示路径，不抽取"
+    },
+    {
+      "path": "prisma/seed-policies-real.ts",
+      "selected": false,
+      "line_count": 337,
+      "material_line_count": 319,
+      "priority": 80,
+      "selection_tier": "frontend",
+      "evidence": "普通源码文件",
+      "model_reason": "非核心展示路径，不抽取"
+    },
+    {
+      "path": "prisma/seed-policies.ts",
+      "selected": false,
+      "line_count": 139,
+      "material_line_count": 101,
+      "priority": 80,
+      "selection_tier": "frontend",
+      "evidence": "普通源码文件",
+      "model_reason": "非核心展示路径，不抽取"
+    },
+    {
+      "path": "prisma/seed-shuanggao.ts",
+      "selected": false,
+      "line_count": 321,
+      "material_line_count": 300,
+      "priority": 80,
+      "selection_tier": "frontend",
+      "evidence": "普通源码文件",
+      "model_reason": "非核心展示路径，不抽取"
+    },
+    {
+      "path": "prisma/seed.ts",
+      "selected": false,
+      "line_count": 278,
+      "material_line_count": 257,
+      "priority": 80,
+      "selection_tier": "frontend",
+      "evidence": "普通源码文件",
+      "model_reason": "非核心展示路径，不抽取"
+    },
+    {
+      "path": "scripts/_verify-4.ts",
+      "selected": false,
+      "line_count": 46,
+      "material_line_count": 40,
+      "priority": 80,
+      "selection_tier": "frontend",
+      "evidence": "普通源码文件",
+      "model_reason": "非核心展示路径，不抽取"
+    },
+    {
+      "path": "scripts/clean-junk-policies.ts",
+      "selected": false,
+      "line_count": 124,
+      "material_line_count": 109,
+      "priority": 80,
+      "selection_tier": "frontend",
+      "evidence": "普通源码文件",
+      "model_reason": "非核心展示路径，不抽取"
+    },
+    {
+      "path": "scripts/crawl-policies-real.ts",
+      "selected": false,
+      "line_count": 728,
+      "material_line_count": 671,
+      "priority": 80,
+      "selection_tier": "frontend",
+      "evidence": "普通源码文件",
+      "model_reason": "非核心展示路径，不抽取"
+    },
+    {
+      "path": "scripts/crawl-policies.ts",
+      "selected": false,
+      "line_count": 191,
+      "material_line_count": 168,
+      "priority": 80,
+      "selection_tier": "frontend",
+      "evidence": "普通源码文件",
+      "model_reason": "非核心展示路径，不抽取"
+    },
+    {
+      "path": "scripts/crawl-websites-playwright.ts",
+      "selected": false,
+      "line_count": 108,
+      "material_line_count": 89,
+      "priority": 80,
+      "selection_tier": "frontend",
+      "evidence": "普通源码文件",
+      "model_reason": "非核心展示路径，不抽取"
+    },
+    {
+      "path": "scripts/crawl-websites-v2.ts",
+      "selected": false,
+      "line_count": 123,
+      "material_line_count": 104,
+      "priority": 80,
+      "selection_tier": "frontend",
+      "evidence": "普通源码文件",
+      "model_reason": "非核心展示路径，不抽取"
+    },
+    {
+      "path": "scripts/crawl-websites.ts",
+      "selected": false,
+      "line_count": 142,
+      "material_line_count": 129,
+      "priority": 80,
+      "selection_tier": "frontend",
+      "evidence": "普通源码文件",
+      "model_reason": "非核心展示路径，不抽取"
+    },
+    {
+      "path": "scripts/diagnose-crawler.ts",
+      "selected": false,
+      "line_count": 93,
+      "material_line_count": 79,
+      "priority": 80,
+      "selection_tier": "frontend",
+      "evidence": "普通源码文件",
+      "model_reason": "非核心展示路径，不抽取"
+    },
+    {
+      "path": "scripts/e2e-policy-analysis.ts",
+      "selected": false,
+      "line_count": 133,
+      "material_line_count": 117,
+      "priority": 80,
+      "selection_tier": "frontend",
+      "evidence": "普通源码文件",
+      "model_reason": "非核心展示路径，不抽取"
+    },
+    {
+      "path": "scripts/e2e-policy-crud.ts",
+      "selected": false,
+      "line_count": 84,
+      "material_line_count": 73,
+      "priority": 80,
+      "selection_tier": "frontend",
+      "evidence": "普通源码文件",
+      "model_reason": "非核心展示路径，不抽取"
+    },
+    {
+      "path": "scripts/fix-gd-dates.ts",
+      "selected": false,
+      "line_count": 93,
+      "material_line_count": 80,
+      "priority": 80,
+      "selection_tier": "frontend",
+      "evidence": "普通源码文件",
+      "model_reason": "非核心展示路径，不抽取"
+    },
+    {
+      "path": "scripts/guess-websites.ts",
+      "selected": false,
+      "line_count": 144,
+      "material_line_count": 121,
+      "priority": 80,
+      "selection_tier": "frontend",
+      "evidence": "普通源码文件",
+      "model_reason": "非核心展示路径，不抽取"
+    },
+    {
+      "path": "scripts/tag-policies.ts",
+      "selected": false,
+      "line_count": 278,
+      "material_line_count": 241,
+      "priority": 80,
+      "selection_tier": "frontend",
+      "evidence": "普通源码文件",
+      "model_reason": "非核心展示路径，不抽取"
+    },
+    {
+      "path": "src/types/index.ts",
+      "selected": false,
+      "line_count": 109,
+      "material_line_count": 98,
+      "priority": 80,
+      "selection_tier": "frontend",
+      "evidence": "普通源码文件",
+      "model_reason": "非核心展示路径，不抽取"
+    },
+    {
+      "path": "src/app/globals.css",
+      "selected": false,
+      "line_count": 15,
+      "material_line_count": 12,
+      "priority": 90,
+      "selection_tier": "frontend",
+      "evidence": "样式文件证据",
+      "model_reason": "非核心展示路径，不抽取"
+    },
+    {
+      "path": "scripts/crawl-state.json",
+      "selected": false,
+      "line_count": 14,
+      "material_line_count": 14,
+      "priority": 100,
+      "selection_tier": "supplement",
+      "evidence": "补充源码证据",
+      "model_reason": "非核心展示路径，不抽取"
+    },
+    {
+      "path": "settings.json",
+      "selected": false,
+      "line_count": 5,
+      "material_line_count": 5,
+      "priority": 100,
+      "selection_tier": "supplement",
+      "evidence": "补充源码证据",
+      "model_reason": "非核心展示路径，不抽取"
+    }
+  ],
+  "confirmation_note": "用户确认46个文件选择（前端页面组件+核心工具+API路由，约99页）；著作权人2人：宋奇轩、芦艳，开发方式=合作开发",
+  "confirmed_at": "2026-09-02T12:55:07+00:00"
+}

@@ -1,0 +1,191 @@
+{
+  "project_root": "D:\\AI Projects\\高职院校地图系统",
+  "project_name": "高职院校地图系统",
+  "software_name_candidate": "vocational college platform",
+  "package": {
+    "name": "vocational-college-platform",
+    "path": "package.json",
+    "version": "0.1.0",
+    "scripts": {
+      "dev": "next dev",
+      "build": "next build",
+      "start": "next start",
+      "lint": "next lint",
+      "db:push": "npx prisma db push",
+      "db:seed": "npx tsx prisma/seed.ts",
+      "db:studio": "npx prisma studio"
+    },
+    "dependency_names": [
+      "@mozilla/readability",
+      "@prisma/client",
+      "@types/node",
+      "@types/react",
+      "@types/react-dom",
+      "autoprefixer",
+      "echarts",
+      "echarts-for-react",
+      "jsdom",
+      "next",
+      "playwright",
+      "postcss",
+      "prisma",
+      "react",
+      "react-dom",
+      "tailwindcss",
+      "tsx",
+      "typescript",
+      "xlsx"
+    ]
+  },
+  "frameworks": [
+    "Next.js",
+    "React"
+  ],
+  "language": "TypeScript",
+  "source": {
+    "file_count": 72,
+    "line_count": 9167,
+    "total_file_count": 72,
+    "total_line_count": 9167,
+    "extension_counts": {
+      ".css": 1,
+      ".json": 3,
+      ".ts": 35,
+      ".tsx": 33
+    },
+    "category_counts": {
+      "component": 28,
+      "entry": 2,
+      "page": 13,
+      "source": 22,
+      "style": 1,
+      "utility": 6
+    },
+    "categorized_files": {
+      "entry": [
+        "src/app/layout.tsx",
+        "src/app/page.tsx"
+      ],
+      "page": [
+        "src/app/api/colleges/route.ts",
+        "src/app/api/colleges/geo/route.ts",
+        "src/app/api/colleges/[id]/route.ts",
+        "src/app/api/crawl-progress/route.ts",
+        "src/app/api/policies/route.ts",
+        "src/app/api/policies/analysis/route.ts",
+        "src/app/api/policies/crawl-status/route.ts",
+        "src/app/api/policies/search/route.ts",
+        "src/app/api/policies/[id]/route.ts",
+        "src/app/api/stats/route.ts",
+        "src/app/college/[id]/page.tsx",
+        "src/app/policy/page.tsx",
+        "src/app/stats/page.tsx"
+      ],
+      "component": [
+        "src/components/college/CollegeDetailContent.tsx",
+        "src/components/college/CollegeDetailModal.tsx",
+        "src/components/college/CollegeModal.tsx",
+        "src/components/college/CollegePanel.tsx",
+        "src/components/layout/AppNav.tsx",
+        "src/components/layout/CrawlProgress.tsx",
+        "src/components/layout/FilterPanel.tsx",
+        "src/components/layout/PolicyCrawlBadge.tsx",
+        "src/components/layout/Sidebar.tsx",
+        "src/components/map/ChinaMap.tsx",
+        "src/components/map/MapPanel.tsx",
+        "src/components/map/MapStatsBanner.tsx",
+        "src/components/map/ProvinceDrawer.tsx",
+        "src/components/policy/PolicyFormModal.tsx",
+        "src/components/policy/PolicyModal.tsx",
+        "src/components/policy/PolicyPanel.tsx",
+        "src/components/policy/PolicyTable.tsx",
+        "src/components/stats/CrossFilter.tsx",
+        "src/components/stats/CrossTable.tsx",
+        "src/components/stats/PolicyAnalysis.tsx",
+        "src/components/stats/StatsCharts.tsx",
+        "src/components/stats/StatsPanel.tsx",
+        "src/components/stats/analysis/CalendarHeatmap.tsx",
+        "src/components/stats/analysis/CooccurrenceGraph.tsx",
+        "src/components/stats/analysis/DepartmentAnalysis.tsx",
+        "src/components/stats/analysis/PolicyChinaHeatmap.tsx",
+        "src/components/stats/analysis/ProvinceActivity.tsx",
+        "src/components/stats/analysis/TrendChart.tsx"
+      ],
+      "utility": [
+        "src/lib/china-geo.ts",
+        "src/lib/llm.ts",
+        "src/lib/policy-analysis.ts",
+        "src/lib/policy-types.ts",
+        "src/lib/prisma.ts",
+        "src/lib/use-china-geo.ts"
+      ],
+      "style": [
+        "src/app/globals.css"
+      ],
+      "source": [
+        "next-env.d.ts",
+        "settings.json",
+        "prisma/seed-policies-real.ts",
+        "prisma/seed-policies.ts",
+        "prisma/seed-shuanggao.ts",
+        "prisma/seed.ts",
+        "public/china.json",
+        "scripts/clean-junk-policies.ts",
+        "scripts/crawl-policies-real.ts",
+        "scripts/crawl-policies.ts",
+        "scripts/crawl-state.json",
+        "scripts/crawl-websites-playwright.ts",
+        "scripts/crawl-websites-v2.ts",
+        "scripts/crawl-websites.ts",
+        "scripts/diagnose-crawler.ts",
+        "scripts/e2e-policy-analysis.ts",
+        "scripts/e2e-policy-crud.ts",
+        "scripts/fix-gd-dates.ts",
+        "scripts/guess-websites.ts",
+        "scripts/tag-policies.ts",
+        "scripts/_verify-4.ts",
+        "src/types/index.ts"
+      ]
+    }
+  },
+  "routes": [
+    "/"
+  ],
+  "readme_excerpt": "",
+  "run_command_candidates": [
+    "npm run dev",
+    "npm run start"
+  ],
+  "feature_candidates": [
+    "api colleges",
+    "colleges geo",
+    "api crawl progress",
+    "api policies",
+    "policies analysis",
+    "policies crawl status",
+    "policies search",
+    "api stats",
+    "college",
+    "policy",
+    "stats",
+    "CollegeDetailContent",
+    "CollegeDetailModal",
+    "CollegeModal",
+    "CollegePanel",
+    "AppNav",
+    "CrawlProgress",
+    "FilterPanel",
+    "PolicyCrawlBadge",
+    "Sidebar",
+    "ChinaMap",
+    "MapPanel",
+    "MapStatsBanner",
+    "ProvinceDrawer",
+    "PolicyFormModal",
+    "PolicyModal",
+    "PolicyPanel",
+    "PolicyTable",
+    "CrossFilter",
+    "CrossTable"
+  ]
+}
