@@ -157,6 +157,9 @@ function extractDateFromUrl(url: string): Date | null {
   // Pattern: /art/2026/6/26/
   m = url.match(/\/art\/(\d{4})\/(\d{1,2})\/(\d{1,2})\//);
   if (m) return new Date(+m[1], +m[2] - 1, +m[3]);
+  // Pattern: /2026-05-07/ (湖南职成处 c.jyt.hunan.gov.cn)
+  m = url.match(/\/(\d{4})-(\d{2})-(\d{2})\//);
+  if (m) return new Date(+m[1], +m[2] - 1, +m[3]);
   return null;
 }
 
@@ -190,6 +193,20 @@ const SOURCES: CrawlSource[] = [
     waitFor: "a[href*='/tzgg/']",
     waitUntil: "domcontentloaded",
     paginate: { type: "index_N", maxPages: 30 },  // 25+ 页历史公告，深挖补湖南数据
+  },
+  {
+    name: "湖南省职成处", province: "湖南省",
+    url: "http://zcc.jyt.hunan.gov.cn/tzjhgg/",
+    waitFor: "a[href*='/c/']",
+    waitUntil: "domcontentloaded",
+    paginate: { type: "index_N", maxPages: 10 },  // 楚怡行动等职教政策主渠道
+  },
+  {
+    name: "湖南省政策法规处", province: "湖南省",
+    url: "http://zcfgc.jyt.hunan.gov.cn/gfxwj/gfxwj/",
+    waitFor: "a[href*='gfxwj']",
+    waitUntil: "domcontentloaded",
+    paginate: { type: "index_N", maxPages: 10 },  // 规范性文件（含职教类）
   },
   {
     name: "广东省教育厅", province: "广东省",
