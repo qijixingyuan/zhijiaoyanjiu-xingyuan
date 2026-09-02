@@ -4,10 +4,10 @@ import CrawlProgress from "./CrawlProgress";
 import PolicyCrawlBadge from "./PolicyCrawlBadge";
 
 const TABS = [
-  { key: "map", label: "院校分布地图", icon: "🗺" },
-  { key: "policy", label: "政策数据库", icon: "📄" },
+  { key: "map", label: "分布地图", icon: "🗺" },
   { key: "college", label: "院校详情", icon: "🏫" },
-  { key: "stats", label: "统计后台", icon: "📊" },
+  { key: "policy", label: "政策数据库", icon: "📄" },
+  { key: "stats", label: "数据分析", icon: "📊" },
 ];
 
 export default function AppNav({ activeTab, onTabChange, counts }: {

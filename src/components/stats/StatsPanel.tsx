@@ -58,7 +58,7 @@ export default function StatsPanel() {
       {subTab === "college" && (
       <div className="w-[220px] border-r border-[#D8E2F0] bg-white flex flex-col flex-shrink-0 overflow-y-auto">
         <div className="px-4 py-4 border-b border-[#D8E2F0]">
-          <h2 className="text-sm font-bold text-[#0C2340] mb-4">数据统计后台</h2>
+          <h2 className="text-sm font-bold text-[#0C2340] mb-4">数据分析</h2>
 
           <div className="mb-5">
             <div className="text-[10px] font-bold tracking-wide text-[#5A6A85] uppercase mb-2">行维度</div>

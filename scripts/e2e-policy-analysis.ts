@@ -1,6 +1,6 @@
 // 政策分析模块 E2E 验证（CLAUDE.md 硬性规则: UI 修改后必须 Playwright 模拟完整交互）
 // 运行: npx tsx scripts/e2e-policy-analysis.ts
-// 覆盖: 地图回归 / 统计后台子标签 / 政策分析 5 维度 / 院校统计回归 / 标签编辑
+// 覆盖: 地图回归 / 数据分析子标签 / 政策分析 5 维度 / 院校统计回归 / 标签编辑
 
 import { chromium } from "playwright";
 
@@ -17,11 +17,11 @@ async function main() {
   await page.waitForSelector("canvas", { timeout: 15000 });
   console.log("1. 首页地图 canvas 渲染 OK, errors:", errors.length);
 
-  // 2. 点击「统计后台」tab
-  await page.locator("button:has-text('统计后台')").click();
+  // 2. 点击「数据分析」tab
+  await page.locator("button:has-text('数据分析')").click();
   await page.waitForTimeout(800);
   const statsText = await page.textContent("body");
-  console.log("2. 统计后台子标签出现:", statsText.includes("院校统计") && statsText.includes("政策分析"));
+  console.log("2. 数据分析子标签出现:", statsText.includes("院校统计") && statsText.includes("政策分析"));
 
   // 3. 点击「政策分析」子标签
   await page.locator("button:has-text('政策分析')").first().click();
