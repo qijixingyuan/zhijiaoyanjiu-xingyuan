@@ -34,8 +34,10 @@ function saveState(state: CrawlState) {
 
 const FORCE = process.argv.includes("--force");
 const ONCE = process.argv.includes("--once");
-// 单源爬取: --only=湖南 只爬名称包含关键词的源
-const ONLY = (process.argv.find((a) => a.startsWith("--only=")) || "").split("=")[1] || "";
+// 指定源爬取: --only=湖南 名称包含关键词；--only=安徽职成处,河南职成网 逗号分隔精确匹配
+const ONLY_RAW = (process.argv.find((a) => a.startsWith("--only=")) || "").split("=")[1] || "";
+const ONLY_EXACT = ONLY_RAW.split(",").map((s) => s.trim()).filter(Boolean);
+const ONLY_SUBSTR = ONLY_EXACT.length === 1 ? ONLY_EXACT[0] : "";
 
 // === 频控延迟（降低反爬拦截）===
 function randomDelay(min = 800, max = 3000): Promise<void> {
@@ -676,8 +678,9 @@ async function main() {
   let sourceNewCount = 0;
 
   for (const source of SOURCES) {
-    // 单源模式: 只爬名称含 --only 关键词的源
-    if (ONLY && !source.name.includes(ONLY)) continue;
+    // 指定源模式: 逗号分隔=精确匹配列表；单个关键词=子串匹配
+    if (ONLY_EXACT.length > 1 && !ONLY_EXACT.includes(source.name)) continue;
+    if (ONLY_SUBSTR && !source.name.includes(ONLY_SUBSTR)) continue;
 
     // 增量: 冷却中的源跳过（除非 --force）
     const prev = crawlState[source.name];
@@ -838,6 +841,7 @@ async function main() {
     }
 
     // 记录源级增量状态（本次新增数；--once 单页核对不记录）
+    // 每源完成后立即持久化，防止进程被超时杀掉时状态丢失
     const srcNew = totalNew - sourceNewCount;
     sourceNewCount = totalNew;
     if (!ONCE) {
@@ -845,13 +849,13 @@ async function main() {
         lastCrawlAt: new Date().toISOString(),
         lastNewCount: srcNew,
       };
+      saveState(crawlState);
       console.log(`  📌 ${source.name} 本次新增 ${srcNew} 条，状态已记录`);
     }
   }
 
   await context.close();
   await browser.close();
-  if (!ONCE) saveState(crawlState);
   console.log(`\n✅ 新增: ${totalNew}, 跳过(重复): ${totalSkipped}, 跳过(垃圾): ${totalJunk}, 跳过(冷却): ${totalCooldown}, 摘要: ${totalSummary}`);
   const total = await prisma.policy.count();
   console.log(`总政策数: ${total}`);
